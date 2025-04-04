@@ -1,4 +1,7 @@
 from robocasa.environments.kitchen.kitchen import *
+import numpy as np
+from robosuite.utils.observables import Observable, sensor
+from robosuite.utils.transform_utils import mat2quat
 
 
 class PnP(Kitchen):
@@ -16,6 +19,70 @@ class PnP(Kitchen):
         self.exclude_obj_groups = exclude_obj_groups
 
         super().__init__(*args, **kwargs)
+
+    def _setup_observables(self):
+        """
+        Sets up observables to be used for this environment. Overrides the base
+        method to add the gripper_pos_quat observable.
+
+        Returns:
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+        """
+        observables = super()._setup_observables()
+
+        @sensor(modality="object")
+        def gripper_pos_quat(obs_cache):
+            # Return gripper position, orientation, and angle
+            eef_pos = self.sim.data.get_body_xpos(
+                self.robots[0].gripper["right"].bodies[1]
+            )
+            eef_quat = self.sim.data.get_body_xquat(
+                self.robots[0].gripper["right"].bodies[2]
+            )
+            # change quat order from wxyz to xyzw
+            eef_quat = np.concatenate([eef_quat[1:], eef_quat[:1]])
+            return np.array(eef_pos.tolist() + eef_quat.tolist())
+
+        observables["gripper_pos_quat"] = Observable(
+            name="gripper_pos_quat",
+            sensor=gripper_pos_quat,
+            sampling_rate=self.control_freq,
+            active=True,
+        )
+
+        @sensor(modality="object")
+        def left_finger_pos_quat(obs_cache):
+            # Return left finger position and orientation
+            finger_geom_id = self.robots[0].gripper["right"].contact_geoms[1]
+            finger_pos = self.sim.data.get_geom_xpos(finger_geom_id)
+            finger_mat = self.sim.data.get_geom_xmat(finger_geom_id)
+            finger_quat = mat2quat(finger_mat.reshape(3, 3))
+            return np.array(finger_pos.tolist() + finger_quat.tolist())
+
+        observables["left_finger_pos_quat"] = Observable(
+            name="left_finger_pos_quat",
+            sensor=left_finger_pos_quat,
+            sampling_rate=self.control_freq,
+            active=True,
+        )
+
+        @sensor(modality="object")
+        def right_finger_pos_quat(obs_cache):
+            # Return right finger position and orientation
+            finger_geom_id = self.robots[0].gripper["right"].contact_geoms[3]
+            finger_pos = self.sim.data.get_geom_xpos(finger_geom_id)
+            finger_mat = self.sim.data.get_geom_xmat(finger_geom_id)
+            finger_quat = mat2quat(finger_mat.reshape(3, 3))
+            return np.array(finger_pos.tolist() + finger_quat.tolist())
+
+        observables["right_finger_pos_quat"] = Observable(
+            name="right_finger_pos_quat",
+            sensor=right_finger_pos_quat,
+            sampling_rate=self.control_freq,
+            active=True,
+        )
+
+        return observables
 
     def _get_obj_cfgs(self):
         raise NotImplementedError
