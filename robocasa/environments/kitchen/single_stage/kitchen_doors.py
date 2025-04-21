@@ -108,6 +108,22 @@ class ManipulateDoor(Kitchen):
             active=True,
         )
 
+        @sensor(modality="object")
+        def bottom_pos_quat(obs_cache):
+            # Return cabinet bottom surface position and orientation
+            bottom_geom_name = self.door_fxtr.visual_geoms[1]
+            bottom_pos = self.sim.data.get_geom_xpos(bottom_geom_name)
+            bottom_mat = self.sim.data.get_geom_xmat(bottom_geom_name)
+            bottom_quat = mat2quat(bottom_mat.reshape(3, 3))
+            return np.array(bottom_pos.tolist() + bottom_quat.tolist())
+
+        observables["bottom_pos_quat"] = Observable(
+            name="bottom_pos_quat",
+            sensor=bottom_pos_quat,
+            sampling_rate=self.control_freq,
+            active=True,
+        )
+
         # @sensor(modality="object")
         # def door_pos_quat(obs_cache):
         #     # Get door position and orientation
