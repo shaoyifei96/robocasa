@@ -201,7 +201,7 @@ class ManipulateDoor(Kitchen):
 
         cfgs.append(
             dict(
-                name="door_obj",
+                name="door",
                 obj_groups="all",
                 graspable=True,
                 microwavable=(True if isinstance(self.door_fxtr, Microwave) else None),
