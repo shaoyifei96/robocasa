@@ -305,6 +305,11 @@ MULTI_STAGE_TASK_DATASETS = OrderedDict(
             human_im="https://utexas.box.com/shared/static/qq3p4ctlmiv751jx5av92aaz9dxylw76.hdf5",
         ),
     ),
+    StoreFruit=dict(
+        human_path="v0.1/multi_stage/customized_tasks/StoreFruit/2025-04-23",
+        horizon=1000,
+        activity="customized_tasks",
+    ),
 )
 
 

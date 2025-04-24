@@ -31,9 +31,7 @@ class PnPCounterToCab(PnP):
         obj_groups (str): Object groups to sample the target object from.
     """
 
-    def __init__(
-        self, cab_id=FixtureType.CABINET_TOP, obj_groups="all", *args, **kwargs
-    ):
+    def __init__(self, cab_id=FixtureType.CABINET_TOP, obj_groups="all", *args, **kwargs):
 
         self.cab_id = cab_id
         super().__init__(obj_groups=obj_groups, *args, **kwargs)
@@ -45,9 +43,7 @@ class PnPCounterToCab(PnP):
         """
         super()._setup_kitchen_references()
         self.cab = self.register_fixture_ref("cab", dict(id=self.cab_id))
-        self.counter = self.register_fixture_ref(
-            "counter", dict(id=FixtureType.COUNTER, ref=self.cab)
-        )
+        self.counter = self.register_fixture_ref("counter", dict(id=FixtureType.COUNTER, ref=self.cab))
         self.init_robot_base_pos = self.cab
 
     def get_ep_meta(self):
@@ -57,9 +53,7 @@ class PnPCounterToCab(PnP):
         """
         ep_meta = super().get_ep_meta()
         obj_lang = self.get_obj_lang()
-        ep_meta[
-            "lang"
-        ] = f"pick the {obj_lang} from the counter and place it in the cabinet"
+        ep_meta["lang"] = f"pick the {obj_lang} from the counter and place it in the cabinet"
         return ep_meta
 
     def _reset_internal(self):
@@ -139,32 +133,32 @@ class PnPCounterToCab(PnP):
         gripper_obj_far = OU.gripper_obj_far(self)
         return obj_inside_cab and gripper_obj_far
 
-    def _setup_observables(self):
-        """
-        Sets up observables to be used for this environment. Add door angle to the observables
+    # def _setup_observables(self):
+    #     """
+    #     Sets up observables to be used for this environment. Add door angle to the observables
 
-        Returns:
-            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
-        """
-        observables = super()._setup_observables()
+    #     Returns:
+    #         OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+    #     """
+    #     observables = super()._setup_observables()
 
-        @sensor(modality="object")
-        def bottom_pos_quat(obs_cache):
-            # Return cabinet bottom surface position and orientation
-            bottom_geom_name = self.cab.visual_geoms[1]
-            bottom_pos = self.sim.data.get_geom_xpos(bottom_geom_name)
-            bottom_mat = self.sim.data.get_geom_xmat(bottom_geom_name)
-            bottom_quat = mat2quat(bottom_mat.reshape(3, 3))
-            return np.array(bottom_pos.tolist() + bottom_quat.tolist())
+    #     @sensor(modality="object")
+    #     def bottom_pos_quat(obs_cache):
+    #         # Return cabinet bottom surface position and orientation
+    #         bottom_geom_name = self.cab.visual_geoms[1]
+    #         bottom_pos = self.sim.data.get_geom_xpos(bottom_geom_name)
+    #         bottom_mat = self.sim.data.get_geom_xmat(bottom_geom_name)
+    #         bottom_quat = T.mat2quat(bottom_mat.reshape(3, 3))
+    #         return np.array(bottom_pos.tolist() + bottom_quat.tolist())
 
-        observables["bottom_pos_quat"] = Observable(
-            name="bottom_pos_quat",
-            sensor=bottom_pos_quat,
-            sampling_rate=self.control_freq,
-            active=True,
-        )
+    #     observables["bottom_pos_quat"] = Observable(
+    #         name="bottom_pos_quat",
+    #         sensor=bottom_pos_quat,
+    #         sampling_rate=self.control_freq,
+    #         active=True,
+    #     )
 
-        return observables
+    #     return observables
 
 
 class PnPCabToCounter(PnP):
@@ -177,9 +171,7 @@ class PnPCabToCounter(PnP):
         obj_groups (str): Object groups to sample the target object from.
     """
 
-    def __init__(
-        self, cab_id=FixtureType.CABINET_TOP, obj_groups="all", *args, **kwargs
-    ):
+    def __init__(self, cab_id=FixtureType.CABINET_TOP, obj_groups="all", *args, **kwargs):
         self.cab_id = cab_id
         super().__init__(obj_groups=obj_groups, *args, **kwargs)
 
@@ -206,9 +198,7 @@ class PnPCabToCounter(PnP):
         """
         ep_meta = super().get_ep_meta()
         obj_lang = self.get_obj_lang()
-        ep_meta[
-            "lang"
-        ] = f"pick the {obj_lang} from the cabinet and place it on the counter"
+        ep_meta["lang"] = f"pick the {obj_lang} from the cabinet and place it on the counter"
         return ep_meta
 
     def _reset_internal(self):
@@ -318,9 +308,7 @@ class PnPCounterToSink(PnP):
         """
         ep_meta = super().get_ep_meta()
         obj_lang = self.get_obj_lang()
-        ep_meta[
-            "lang"
-        ] = f"pick the {obj_lang} from the counter and place it in the sink"
+        ep_meta["lang"] = f"pick the {obj_lang} from the counter and place it in the sink"
         return ep_meta
 
     def _get_obj_cfgs(self):
@@ -430,9 +418,7 @@ class PnPSinkToCounter(PnP):
         ep_meta = super().get_ep_meta()
         obj_lang = self.get_obj_lang()
         cont_lang = self.get_obj_lang(obj_name="container")
-        ep_meta[
-            "lang"
-        ] = f"pick the {obj_lang} from the sink and place it on the {cont_lang} located on the counter"
+        ep_meta["lang"] = f"pick the {obj_lang} from the sink and place it on the {cont_lang} located on the counter"
         return ep_meta
 
     def _get_obj_cfgs(self):
@@ -553,9 +539,7 @@ class PnPCounterToMicrowave(PnP):
         """
         ep_meta = super().get_ep_meta()
         obj_lang = self.get_obj_lang()
-        ep_meta[
-            "lang"
-        ] = f"pick the {obj_lang} from the counter and place it in the microwave"
+        ep_meta["lang"] = f"pick the {obj_lang} from the counter and place it in the microwave"
         return ep_meta
 
     def _get_obj_cfgs(self):
@@ -680,9 +664,7 @@ class PnPMicrowaveToCounter(PnP):
         ep_meta = super().get_ep_meta()
         obj_lang = self.get_obj_lang()
         cont_lang = self.get_obj_lang(obj_name="container")
-        ep_meta[
-            "lang"
-        ] = f"pick the {obj_lang} from the microwave and place it on {cont_lang} located on the counter"
+        ep_meta["lang"] = f"pick the {obj_lang} from the microwave and place it on {cont_lang} located on the counter"
         return ep_meta
 
     def _get_obj_cfgs(self):
@@ -771,9 +753,7 @@ class PnPCounterToStove(PnP):
         """
         super()._setup_kitchen_references()
         self.stove = self.register_fixture_ref("stove", dict(id=FixtureType.STOVE))
-        self.counter = self.register_fixture_ref(
-            "counter", dict(id=FixtureType.COUNTER, ref=self.stove, size=[0.30, 0.40])
-        )
+        self.counter = self.register_fixture_ref("counter", dict(id=FixtureType.COUNTER, ref=self.stove, size=[0.30, 0.40]))
         self.init_robot_base_pos = self.stove
 
     def get_ep_meta(self):
@@ -784,9 +764,7 @@ class PnPCounterToStove(PnP):
         ep_meta = super().get_ep_meta()
         obj_lang = self.get_obj_lang()
         cont_lang = self.get_obj_lang(obj_name="container")
-        ep_meta[
-            "lang"
-        ] = f"pick the {obj_lang} from the plate and place it in the {cont_lang}"
+        ep_meta["lang"] = f"pick the {obj_lang} from the plate and place it in the {cont_lang}"
         return ep_meta
 
     def _get_obj_cfgs(self):
@@ -859,9 +837,7 @@ class PnPStoveToCounter(PnP):
         """
         super()._setup_kitchen_references()
         self.stove = self.register_fixture_ref("stove", dict(id=FixtureType.STOVE))
-        self.counter = self.register_fixture_ref(
-            "counter", dict(id=FixtureType.COUNTER, ref=self.stove, size=[0.30, 0.40])
-        )
+        self.counter = self.register_fixture_ref("counter", dict(id=FixtureType.COUNTER, ref=self.stove, size=[0.30, 0.40]))
         self.init_robot_base_pos = self.stove
 
     def get_ep_meta(self):
@@ -872,12 +848,8 @@ class PnPStoveToCounter(PnP):
         ep_meta = super().get_ep_meta()
         obj_lang = self.get_obj_lang()
         obj_cont_lang = self.get_obj_lang(obj_name="obj_container")
-        cont_lang, preposition = self.get_obj_lang(
-            obj_name="container", get_preposition=True
-        )
-        ep_meta[
-            "lang"
-        ] = f"pick the {obj_lang} from the {obj_cont_lang} and place it {preposition} the {cont_lang}"
+        cont_lang, preposition = self.get_obj_lang(obj_name="container", get_preposition=True)
+        ep_meta["lang"] = f"pick the {obj_lang} from the {obj_cont_lang} and place it {preposition} the {cont_lang}"
         return ep_meta
 
     def _get_obj_cfgs(self):

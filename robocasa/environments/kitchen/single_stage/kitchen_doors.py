@@ -12,9 +12,7 @@ class ManipulateDoor(Kitchen):
         door_id (str): The door fixture id to manipulate.
     """
 
-    def __init__(
-        self, behavior="open", door_id=FixtureType.DOOR_TOP_HINGE, *args, **kwargs
-    ):
+    def __init__(self, behavior="open", door_id=FixtureType.DOOR_TOP_HINGE, *args, **kwargs):
         self.door_id = door_id
         assert behavior in ["open", "close"]
         self.behavior = behavior
@@ -73,102 +71,96 @@ class ManipulateDoor(Kitchen):
         super()._setup_references()
 
         # Get the address for the door hinge joint
-        self.hinge_qpos_addr = self.sim.model.get_joint_qpos_addr(
-            self.door_fxtr.joints[0]
-        )
-        self.gripper_qpos_joint1_addr = self.sim.model.get_joint_qpos_addr(
-            self.robots[0].gripper_joints["right"][0]
-        )
-        self.gripper_qpos_joint2_addr = self.sim.model.get_joint_qpos_addr(
-            self.robots[0].gripper_joints["right"][1]
-        )
+        self.hinge_qpos_addr = self.sim.model.get_joint_qpos_addr(self.door_fxtr.joints[0])
+        self.gripper_qpos_joint1_addr = self.sim.model.get_joint_qpos_addr(self.robots[0].gripper_joints["right"][0])
+        self.gripper_qpos_joint2_addr = self.sim.model.get_joint_qpos_addr(self.robots[0].gripper_joints["right"][1])
 
-    def _setup_observables(self):
-        """
-        Sets up observables to be used for this environment. Add door angle to the observables
+    # def _setup_observables(self):
+    #     """
+    #     Sets up observables to be used for this environment. Add door angle to the observables
 
-        Returns:
-            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
-        """
-        observables = super()._setup_observables()
+    #     Returns:
+    #         OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+    #     """
+    #     observables = super()._setup_observables()
 
-        @sensor(modality="object")
-        def cabinet_pos_quat(obs_cache):
-            # Get cabinet position and orientation
-            cab_body = f"{self.door_fxtr.name}_{self.door_fxtr._bodies[0]}"
-            cab_pos = self.sim.data.get_body_xpos(cab_body)
-            cab_quat = self.sim.data.get_body_xquat(cab_body)
-            cab_quat = convert_quat(cab_quat)
-            return np.array(cab_pos.tolist() + cab_quat.tolist())
+    #     @sensor(modality="object")
+    #     def cabinet_pos_quat(obs_cache):
+    #         # Get cabinet position and orientation
+    #         cab_body = f"{self.door_fxtr.name}_{self.door_fxtr._bodies[0]}"
+    #         cab_pos = self.sim.data.get_body_xpos(cab_body)
+    #         cab_quat = self.sim.data.get_body_xquat(cab_body)
+    #         cab_quat = T.convert_quat(cab_quat)
+    #         return np.array(cab_pos.tolist() + cab_quat.tolist())
 
-        observables["cabinet_pos_quat"] = Observable(
-            name="cabinet_pos_quat",
-            sensor=cabinet_pos_quat,
-            sampling_rate=self.control_freq,
-            active=True,
-        )
+    #     observables["cabinet_pos_quat"] = Observable(
+    #         name="cabinet_pos_quat",
+    #         sensor=cabinet_pos_quat,
+    #         sampling_rate=self.control_freq,
+    #         active=True,
+    #     )
 
-        @sensor(modality="object")
-        def bottom_pos_quat(obs_cache):
-            # Return cabinet bottom surface position and orientation
-            bottom_geom_name = self.door_fxtr.visual_geoms[1]
-            bottom_pos = self.sim.data.get_geom_xpos(bottom_geom_name)
-            bottom_mat = self.sim.data.get_geom_xmat(bottom_geom_name)
-            bottom_quat = mat2quat(bottom_mat.reshape(3, 3))
-            return np.array(bottom_pos.tolist() + bottom_quat.tolist())
+    #     @sensor(modality="object")
+    #     def bottom_pos_quat(obs_cache):
+    #         # Return cabinet bottom surface position and orientation
+    #         bottom_geom_name = self.door_fxtr.visual_geoms[1]
+    #         bottom_pos = self.sim.data.get_geom_xpos(bottom_geom_name)
+    #         bottom_mat = self.sim.data.get_geom_xmat(bottom_geom_name)
+    #         bottom_quat = T.mat2quat(bottom_mat.reshape(3, 3))
+    #         return np.array(bottom_pos.tolist() + bottom_quat.tolist())
 
-        observables["bottom_pos_quat"] = Observable(
-            name="bottom_pos_quat",
-            sensor=bottom_pos_quat,
-            sampling_rate=self.control_freq,
-            active=True,
-        )
+    #     observables["bottom_pos_quat"] = Observable(
+    #         name="bottom_pos_quat",
+    #         sensor=bottom_pos_quat,
+    #         sampling_rate=self.control_freq,
+    #         active=True,
+    #     )
 
-        # @sensor(modality="object")
-        # def door_pos_quat(obs_cache):
-        #     # Get door position and orientation
-        #     door_body = f"{self.door_fxtr.name}_{self.door_fxtr._bodies[1]}"
-        #     door_pos = self.sim.data.get_body_xpos(door_body)
-        #     door_quat = self.sim.data.get_body_xquat(door_body)
-        #     door_quat = convert_quat(door_quat)
-        #     return np.array(door_pos.tolist() + door_quat.tolist())
+    #     # @sensor(modality="object")
+    #     # def door_pos_quat(obs_cache):
+    #     #     # Get door position and orientation
+    #     #     door_body = f"{self.door_fxtr.name}_{self.door_fxtr._bodies[1]}"
+    #     #     door_pos = self.sim.data.get_body_xpos(door_body)
+    #     #     door_quat = self.sim.data.get_body_xquat(door_body)
+    #     #     door_quat = T.convert_quat(door_quat)
+    #     #     return np.array(door_pos.tolist() + door_quat.tolist())
 
-        # observables["door_pos_quat"] = Observable(
-        #     name="door_pos_quat",
-        #     sensor=door_pos_quat,
-        #     sampling_rate=self.control_freq,
-        #     active=True,
-        # )
+    #     # observables["door_pos_quat"] = Observable(
+    #     #     name="door_pos_quat",
+    #     #     sensor=door_pos_quat,
+    #     #     sampling_rate=self.control_freq,
+    #     #     active=True,
+    #     # )
 
-        @sensor(modality="object")
-        def handle_pos_quat(obs_cache):
-            # Return handle position and orientation
-            if (
-                isinstance(self.door_fxtr, SingleCabinet)
-                or isinstance(self.door_fxtr, Drawer)
-                or isinstance(self.door_fxtr, Microwave)
-            ):
-                handle_name = self.door_fxtr.handle_name
-            elif isinstance(self.door_fxtr, HingeCabinet):
-                # For double doors, you might need to choose which handle
-                handle_name = self.door_fxtr.left_handle_name
-            else:
-                # For other fixture types, try to find a handle site
-                handle_name = f"{self.door_fxtr.name}_door_handle_handle"
-            handle_geom_id = self.sim.model.geom_name2id(handle_name)
-            handle_pos = self.sim.data.geom_xpos[handle_geom_id]
-            handle_quat = self.sim.data.geom_xmat[handle_geom_id].reshape(3, 3)
-            handle_quat = mat2quat(handle_quat)
-            return np.array(handle_pos.tolist() + handle_quat.tolist())
+    #     @sensor(modality="object")
+    #     def handle_pos_quat(obs_cache):
+    #         # Return handle position and orientation
+    #         if (
+    #             isinstance(self.door_fxtr, SingleCabinet)
+    #             or isinstance(self.door_fxtr, Drawer)
+    #             or isinstance(self.door_fxtr, Microwave)
+    #         ):
+    #             handle_name = self.door_fxtr.handle_name
+    #         elif isinstance(self.door_fxtr, HingeCabinet):
+    #             # For double doors, you might need to choose which handle
+    #             handle_name = self.door_fxtr.left_handle_name
+    #         else:
+    #             # For other fixture types, try to find a handle site
+    #             handle_name = f"{self.door_fxtr.name}_door_handle_handle"
+    #         handle_geom_id = self.sim.model.geom_name2id(handle_name)
+    #         handle_pos = self.sim.data.geom_xpos[handle_geom_id]
+    #         handle_quat = self.sim.data.geom_xmat[handle_geom_id].reshape(3, 3)
+    #         handle_quat = T.mat2quat(handle_quat)
+    #         return np.array(handle_pos.tolist() + handle_quat.tolist())
 
-        observables["handle_pos_quat"] = Observable(
-            name="handle_pos_quat",
-            sensor=handle_pos_quat,
-            sampling_rate=self.control_freq,
-            active=True,
-        )
+    #     observables["handle_pos_quat"] = Observable(
+    #         name="handle_pos_quat",
+    #         sensor=handle_pos_quat,
+    #         sampling_rate=self.control_freq,
+    #         active=True,
+    #     )
 
-        return observables
+    #     return observables
 
     def _check_success(self):
         """
@@ -221,9 +213,7 @@ class ManipulateDoor(Kitchen):
                     name=f"distr_counter_{i+1}",
                     obj_groups="all",
                     placement=dict(
-                        fixture=self.get_fixture(
-                            FixtureType.COUNTER, ref=self.door_fxtr
-                        ),
+                        fixture=self.get_fixture(FixtureType.COUNTER, ref=self.door_fxtr),
                         sample_region_kwargs=dict(
                             ref=self.door_fxtr,
                         ),
@@ -235,44 +225,6 @@ class ManipulateDoor(Kitchen):
             )
 
         return cfgs
-
-    def get_handle_location(self):
-        """
-        Get the position of the door handle in world coordinates.
-
-        Returns:
-            np.ndarray: 3D position [x, y, z] of the handle
-        """
-        # Get the handle name based on the door fixture type
-        if (
-            isinstance(self.door_fxtr, SingleCabinet)
-            or isinstance(self.door_fxtr, Drawer)
-            or isinstance(self.door_fxtr, Microwave)
-        ):
-            handle_name = self.door_fxtr.handle_name
-        elif isinstance(self.door_fxtr, HingeCabinet):
-            # For double doors, you might need to choose which handle
-            handle_name = self.door_fxtr.left_handle_name
-        else:
-            # For other fixture types, try to find a handle site
-            handle_name = f"{self.door_fxtr.name}_door_handle_handle"
-
-        # If handle_name ends with "_handle", replace it with "_main"
-        # if handle_name.endswith("_handle"):
-        #     handle_name_main = handle_name[:-7] + "_main"
-        # else:
-        #     handle_name_main = handle_name
-
-        # Get the handle position from MuJoCo
-
-        # try:
-        # If not a site, try as a body
-        handle_geom_id = self.sim.model.geom_name2id(handle_name)
-        handle_pos = self.sim.data.geom_xpos[handle_geom_id]
-        handle_quat = self.sim.data.geom_xmat[handle_geom_id].reshape(3, 3)
-        handle_quat = mat2quat(handle_quat)
-
-        return handle_pos, handle_quat
 
 
 class OpenDoor(ManipulateDoor):

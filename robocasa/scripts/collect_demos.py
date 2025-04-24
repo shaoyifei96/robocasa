@@ -29,7 +29,6 @@ import robocasa
 import robocasa.macros as macros
 from robocasa.models.fixtures import FixtureType
 from robocasa.utils.robomimic.robomimic_dataset_utils import convert_to_robomimic_format
-from scipy.spatial.transform import Rotation as R
 
 
 def is_empty_input_spacemouse(action_dict):
@@ -81,22 +80,13 @@ def collect_human_trajectory(
         # ID = 2 always corresponds to agentview
         env.render()
 
-    task_completion_hold_count = (
-        -1
-    )  # counter to collect 10 timesteps after reaching goal
+    task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
 
     nonzero_ac_seen = False
 
     # Keep track of prev gripper actions when using since they are position-based and must be maintained when arms switched
-    all_prev_gripper_actions = [
-        {
-            f"{robot_arm}_gripper": np.repeat([0], robot.gripper[robot_arm].dof)
-            for robot_arm in robot.arms
-            if robot.gripper[robot_arm].dof > 0
-        }
-        for robot in env.robots
-    ]
+    all_prev_gripper_actions = [{f"{robot_arm}_gripper": np.repeat([0], robot.gripper[robot_arm].dof) for robot_arm in robot.arms if robot.gripper[robot_arm].dof > 0} for robot in env.robots]
 
     zero_action = np.zeros(env.action_dim)
     for _ in range(1):
@@ -145,75 +135,12 @@ def collect_human_trajectory(
             nonzero_ac_seen = True
 
         # Maintain gripper state for each robot but only update the active robot with action
-        env_action = [
-            robot.create_action_vector(all_prev_gripper_actions[i])
-            for i, robot in enumerate(env.robots)
-        ]
+        env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]
         env_action[device.active_robot] = active_robot.create_action_vector(action_dict)
-        # print(env_action)
         env_action = np.concatenate(env_action)
 
         # Run environment step
         obs, _, _, _ = env.step(env_action)
-        # from scipy.spatial.transform import Rotation
-        # try:
-        #     # for key in obs:
-        #     #     if any(s in key for s in ["gripper", "handle", "eef"]):
-        #     #         print(f"{key}: {obs[key]}")
-        env.env.viewer.mjprint(f"eff_pos:\n{obs['robot0_eef_pos']}")
-        print(f"eff_quat: {obs['robot0_eef_quat']}")
-        print(f"eff_euler: {R.from_quat(obs['robot0_eef_quat']).as_euler('xyz')}")
-        print(f"base_quat: {obs['robot0_base_quat']}")
-        print(f"base_euler: {R.from_quat(obs['robot0_base_quat']).as_euler('xyz')}")
-        # print(f"eff_site_euler: {R.from_quat(obs['robot0_eef_quat_site']).as_euler('xyz')}")
-        print(f"handle_quat: {obs['handle_pos_quat']}")
-        print(
-            f"handle_euler: {R.from_quat(obs['handle_pos_quat'][3:7]).as_euler('xyz')}"
-        )
-
-        print(f"base_pos: {obs['robot0_base_pos']}")
-        print(f"eff_pos: {obs['robot0_eef_pos']}")
-
-        # Compute robot_base_w for debugging
-        handle_init_pos = obs["handle_pos_quat"][:3]
-        handle_init_quat = obs["handle_pos_quat"][3:7]
-        handle_init_rot = R.from_quat(handle_init_quat).as_matrix()
-
-        gripper_pos = obs["robot0_eef_pos"]
-        gripper_quat = obs["robot0_eef_quat"]
-        gripper_rot = R.from_quat(gripper_quat).as_matrix()
-
-        # Compute relative position in world frame
-        rel_pos_world = gripper_pos - handle_init_pos
-        # Transform relative position to handle frame
-        pos_in_handle = handle_init_rot.T @ rel_pos_world
-
-        expected_relative_rot_handle = R.from_quat(np.array([0.5, 0.5, 0.5, -0.5]))
-
-        # Transform gripper rotation to handle frame
-        rot_in_handle = handle_init_rot.T @ gripper_rot
-
-        # Compute the difference between the expected relative rotation and the actual relative rotation
-        rel_rot_diff = expected_relative_rot_handle * R.from_matrix(rot_in_handle).inv()
-
-        def vee_operator(w):
-            return np.array([w[2, 1], w[0, 2], w[1, 0]])
-
-        angular_w_handle = vee_operator(rel_rot_diff.as_matrix())
-        # move that difference to the base frame
-        world_w = handle_init_rot @ angular_w_handle
-
-        robot_base_pos = obs["robot0_base_pos"]
-        robot_base_quat = obs["robot0_base_quat"]
-        robot_base_rot = R.from_quat(robot_base_quat).as_matrix()
-
-        robot_base_w = robot_base_rot.T @ world_w
-        print(f"robot_base_w: {robot_base_w}")
-        # except:
-        #     pass
-
-        print("--------------------------------")
-
         if render:
             env.render()
 
@@ -437,17 +364,11 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("--debug", action="store_true")
-    parser.add_argument(
-        "--renderer", type=str, default="mjviewer", choices=["mjviewer", "mujoco"]
-    )
-    parser.add_argument(
-        "--max_fr", default=30, type=int, help="If specified, limit the frame rate"
-    )
+    parser.add_argument("--renderer", type=str, default="mjviewer", choices=["mjviewer", "mujoco"])
+    parser.add_argument("--max_fr", default=30, type=int, help="If specified, limit the frame rate")
 
     parser.add_argument("--layout", type=int, nargs="+", default=-1)
-    parser.add_argument(
-        "--style", type=int, nargs="+", default=[0, 1, 2, 3, 4, 5, 6, 7, 8, 11]
-    )
+    parser.add_argument("--style", type=int, nargs="+", default=[0, 1, 2, 3, 4, 5, 6, 7, 8, 11])
     parser.add_argument("--generative_textures", action="store_true")
     args = parser.parse_args()
 
@@ -483,9 +404,7 @@ if __name__ == "__main__":
     # Mirror actions if using a kitchen environment
     if env_name in ["Lift"]:  # add other non-kitchen tasks here
         if args.obj_groups is not None:
-            print(
-                "Specifying 'obj_groups' in non-kitchen environment does not have an effect."
-            )
+            print("Specifying 'obj_groups' in non-kitchen environment does not have an effect.")
         mirror_actions = False
         if args.camera is None:
             args.camera = "agentview"
@@ -540,7 +459,7 @@ if __name__ == "__main__":
 
     # initialize device
     if args.device == "keyboard":
-        from robosuite.devices import Keybyoard
+        from robosuite.devices import Keyboard
 
         device = Keyboard(
             env=env,
@@ -584,7 +503,5 @@ if __name__ == "__main__":
         if not args.debug:
             if discard_traj and ep_directory is not None:
                 excluded_eps.append(ep_directory.split("/")[-1])
-            hdf5_path = gather_demonstrations_as_hdf5(
-                tmp_directory, new_dir, env_info, excluded_episodes=excluded_eps
-            )
+            hdf5_path = gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info, excluded_episodes=excluded_eps)
             convert_to_robomimic_format(hdf5_path)
