@@ -1,6 +1,4 @@
 from robocasa.environments.kitchen.kitchen import *
-from robocasa.environments.kitchen.single_stage.kitchen_pnp import PnP
-from robocasa.environments.kitchen.single_stage.kitchen_doors import ManipulateDoor
 
 
 class StoreFruit(Kitchen):
@@ -24,8 +22,8 @@ class StoreFruit(Kitchen):
         The cabinet to place the fruit in and the counter to initialize it on.
         """
         super()._setup_kitchen_references()
-        # self.cab = self.register_fixture_ref("cab", dict(id=FixtureType.DOOR_TOP_HINGE_SINGLE))
-        self.cab = self.register_fixture_ref("cab", dict(id=FixtureType.DOOR_TOP_HINGE_DOUBLE))
+        self.cab = self.register_fixture_ref("cab", dict(id=FixtureType.DOOR_TOP_HINGE_SINGLE))
+        # self.cab = self.register_fixture_ref("cab", dict(id=FixtureType.DOOR_TOP_HINGE_DOUBLE))
         self.counter = self.register_fixture_ref("counter", dict(id=FixtureType.COUNTER, ref=self.cab))
         self.init_robot_base_pos = self.cab
 
