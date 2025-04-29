@@ -1212,6 +1212,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             body_pos = self.sim.data.get_body_xpos(body_name)
             body_quat = self.sim.data.get_body_xquat(body_name)
             body_quat = T.convert_quat(body_quat)
+            self.viewer.mjshowframe(body_pos, body_quat, name=body_name)
             return np.array(body_pos.tolist() + body_quat.tolist())
 
         def get_geom_pos_quat(geom_name):
@@ -1221,7 +1222,18 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             geom_pos = self.sim.data.get_geom_xpos(geom_name)
             geom_mat = self.sim.data.get_geom_xmat(geom_name)
             geom_quat = T.mat2quat(geom_mat.reshape(3, 3))
+            self.viewer.mjshowframe(geom_pos, geom_quat, name=geom_name)
             return np.array(geom_pos.tolist() + geom_quat.tolist())
+
+        def get_site_pos_quat(site_name):
+            """
+            Helper function to get the position and orientation of a site
+            """
+            site_pos = self.sim.data.get_site_xpos(site_name)
+            site_mat = self.sim.data.get_site_xmat(site_name)
+            site_quat = T.mat2quat(site_mat.reshape(3, 3))
+            self.viewer.mjshowframe(site_pos, site_quat, name=site_name)
+            return np.array(site_pos.tolist() + site_quat.tolist())
 
         ### TODO: this was stolen from pick-place - do we want to move this into utils to share it? ###
         pf = self.robots[0].robot_model.naming_prefix
@@ -1239,6 +1251,13 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         has_handle = hasattr(obj_fxtr, "handle_name") if obj_fxtr is not None else False
         has_left_handle = hasattr(obj_fxtr, "left_handle_name") if obj_fxtr is not None else False
         has_right_handle = hasattr(obj_fxtr, "right_handle_name") if obj_fxtr is not None else False
+
+        has_knob = (
+            hasattr(self, "knob")
+            and hasattr(obj_fxtr, "bodies")
+            and isinstance(obj_fxtr.contact_geoms, (list, tuple))
+            and any(self.knob in geom_name for geom_name in obj_fxtr.contact_geoms if isinstance(geom_name, str))
+        )
 
         @sensor(modality=modality)
         def obj_fxtr_pos_quat(obs_cache):
@@ -1272,6 +1291,11 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         def obj_fxtr_right_handle_pos_quat(obs_cache):
             return get_geom_pos_quat(obj_fxtr.right_handle_name)
 
+        @sensor(modality=modality)
+        def obj_fxtr_knob_pos_quat(obs_cache):
+            knob_geom_name = [geom for geom in obj_fxtr.contact_geoms if self.knob in geom][0]
+            return get_geom_pos_quat(knob_geom_name)
+
         # @sensor(modality=modality)
         # def obj_pos(obs_cache):
         #     return np.array(self.sim.data.body_xpos[self.obj_body_id[obj_name]])
@@ -1286,6 +1310,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_name]]
             obj_quat = T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[obj_name]])
             combined = np.concatenate([obj_pos, obj_quat])
+            self.viewer.mjshowframe(obj_pos, obj_quat, name=obj_name)
             return np.array(combined)
 
         # @sensor(modality=modality)
@@ -1365,6 +1390,13 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                 names += [f"bottom_pos_quat"]
                 sensors += [obj_fxtr_pos_quat]
                 names += [f"cabinet_pos_quat"]
+            if has_knob:
+                knob_body_name = [body for body in obj_fxtr.bodies if self.knob in body][0]
+                sensors += [obj_fxtr_knob_pos_quat]
+                # names += [f"{knob_body_name}_pos_quat"]
+                names += [f"knob_pos_quat"]
+                sensors += [obj_fxtr_pos_quat]
+                names += [f"stovetop_pos_quat"]
 
         return sensors, names
 
