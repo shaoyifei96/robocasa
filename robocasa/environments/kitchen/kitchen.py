@@ -1129,7 +1129,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             # Return gripper position, orientation, and angle
             eef_pos = self.sim.data.get_body_xpos(self.robots[0].gripper["right"].bodies[1])
             eef_quat = self.sim.data.get_body_xquat(self.robots[0].gripper["right"].bodies[2])
-            eef_quat = T.convert_quat(eef_quat) # convert to xyzw
+            eef_quat = T.convert_quat(eef_quat)  # convert to xyzw
             return np.array(eef_pos.tolist() + eef_quat.tolist())
 
         observables["gripper_pos_quat"] = Observable(
@@ -1205,6 +1205,8 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                 names (list): array of corresponding observable names
         """
 
+        debug = False
+
         def get_body_pos_quat(body_name):
             """
             Helper function to get the position and orientation of a body
@@ -1212,7 +1214,8 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             body_pos = self.sim.data.get_body_xpos(body_name)
             body_quat = self.sim.data.get_body_xquat(body_name)
             body_quat = T.convert_quat(body_quat)
-            self.viewer.mjshowframe(body_pos, body_quat, name=body_name)
+            if debug:
+                self.viewer.mjshowframe(body_pos, body_quat, name=body_name)
             return np.array(body_pos.tolist() + body_quat.tolist())
 
         def get_geom_pos_quat(geom_name):
@@ -1222,7 +1225,8 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             geom_pos = self.sim.data.get_geom_xpos(geom_name)
             geom_mat = self.sim.data.get_geom_xmat(geom_name)
             geom_quat = T.mat2quat(geom_mat.reshape(3, 3))
-            self.viewer.mjshowframe(geom_pos, geom_quat, name=geom_name)
+            if debug:
+                self.viewer.mjshowframe(geom_pos, geom_quat, name=geom_name)
             return np.array(geom_pos.tolist() + geom_quat.tolist())
 
         def get_site_pos_quat(site_name):
@@ -1232,7 +1236,8 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             site_pos = self.sim.data.get_site_xpos(site_name)
             site_mat = self.sim.data.get_site_xmat(site_name)
             site_quat = T.mat2quat(site_mat.reshape(3, 3))
-            self.viewer.mjshowframe(site_pos, site_quat, name=site_name)
+            if debug:
+                self.viewer.mjshowframe(site_pos, site_quat, name=site_name)
             return np.array(site_pos.tolist() + site_quat.tolist())
 
         ### TODO: this was stolen from pick-place - do we want to move this into utils to share it? ###
