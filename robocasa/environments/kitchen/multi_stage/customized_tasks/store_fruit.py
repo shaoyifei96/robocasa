@@ -28,7 +28,7 @@ class StoreFruit(Kitchen):
         if left_cabinet_names:
             self.cab = self.fixtures[left_cabinet_names[0]]
         else:
-            self.cab = self.register_fixture_ref("cab", dict(id=FixtureType.CABINET_TOP))
+            raise ValueError("No left cabinet found in the kitchen fixtures.")
 
         self.counter = self.register_fixture_ref("counter", dict(id=FixtureType.COUNTER, ref=self.cab))
         self.init_robot_base_pos = self.cab
@@ -68,7 +68,7 @@ class StoreFruit(Kitchen):
                     sample_region_kwargs=dict(
                         ref=self.cab,  # Place relative to the cabinet
                     ),
-                    size=(0.60, 0.40),  # Area on the counter to sample from
+                    size=(0.30, 0.20),  # Area on the counter to sample from
                     pos=(0.0, -1.0),  # Place in the front part of the sampling area
                 ),
             )
