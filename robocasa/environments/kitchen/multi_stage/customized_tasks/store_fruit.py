@@ -55,7 +55,7 @@ class StoreFruit(Kitchen):
         cfgs.append(
             dict(
                 name="obj",
-                obj_groups="fruit",  # Sample from the 'fruit' group
+                obj_groups="my_pnp",  # Sample from the 'fruit' group
                 graspable=True,
                 placement=dict(
                     fixture=self.counter,
