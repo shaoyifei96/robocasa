@@ -1214,7 +1214,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             body_pos = self.sim.data.get_body_xpos(body_name)
             body_quat = self.sim.data.get_body_xquat(body_name)
             body_quat = T.convert_quat(body_quat)
-            if debug:
+            if debug and self.viewer is not None:
                 self.viewer.mjshowframe(body_pos, body_quat, name=body_name)
             return np.array(body_pos.tolist() + body_quat.tolist())
 
@@ -1225,7 +1225,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             geom_pos = self.sim.data.get_geom_xpos(geom_name)
             geom_mat = self.sim.data.get_geom_xmat(geom_name)
             geom_quat = T.mat2quat(geom_mat.reshape(3, 3))
-            if debug:
+            if debug and self.viewer is not None:
                 self.viewer.mjshowframe(geom_pos, geom_quat, name=geom_name)
             return np.array(geom_pos.tolist() + geom_quat.tolist())
 
@@ -1236,7 +1236,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             site_pos = self.sim.data.get_site_xpos(site_name)
             site_mat = self.sim.data.get_site_xmat(site_name)
             site_quat = T.mat2quat(site_mat.reshape(3, 3))
-            if debug:
+            if debug and self.viewer is not None:
                 self.viewer.mjshowframe(site_pos, site_quat, name=site_name)
             return np.array(site_pos.tolist() + site_quat.tolist())
 
@@ -1315,7 +1315,8 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_name]]
             obj_quat = T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[obj_name]])
             combined = np.concatenate([obj_pos, obj_quat])
-            self.viewer.mjshowframe(obj_pos, obj_quat, name=obj_name)
+            if debug and self.viewer is not None:
+                self.viewer.mjshowframe(obj_pos, obj_quat, name=obj_name)
             return np.array(combined)
 
         # @sensor(modality=modality)
