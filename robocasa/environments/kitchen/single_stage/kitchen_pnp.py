@@ -42,7 +42,12 @@ class PnPCounterToCab(PnP):
         The cabinet to place object in and the counter to initialize it on
         """
         super()._setup_kitchen_references()
-        self.cab = self.register_fixture_ref("cab", dict(id=self.cab_id))
+        # self.cab = self.register_fixture_ref("cab", dict(id=self.cab_id))
+        left_cabinet_names = [name for name in self.fixtures.keys() if "cab" in name.lower() and hasattr(self.fixtures[name], "orientation") and "left" in self.fixtures[name].orientation.lower()]
+        if left_cabinet_names:
+            self.cab = self.fixtures[left_cabinet_names[0]]
+        else:
+            raise ValueError("No left cabinet found in the kitchen fixtures.")
         self.counter = self.register_fixture_ref("counter", dict(id=FixtureType.COUNTER, ref=self.cab))
         self.init_robot_base_pos = self.cab
 

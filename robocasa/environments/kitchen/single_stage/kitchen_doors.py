@@ -23,7 +23,12 @@ class ManipulateDoor(Kitchen):
         Setup the kitchen references for the door tasks.
         """
         super()._setup_kitchen_references()
-        self.door_fxtr = self.register_fixture_ref("door_fxtr", dict(id=self.door_id))
+        # self.door_fxtr = self.register_fixture_ref("door_fxtr", dict(id=self.door_id))
+        left_cabinet_names = [name for name in self.fixtures.keys() if "cab" in name.lower() and hasattr(self.fixtures[name], "orientation") and "left" in self.fixtures[name].orientation.lower()]
+        if left_cabinet_names:
+            self.door_fxtr = self.fixtures[left_cabinet_names[0]]
+        else:
+            raise ValueError("No left cabinet found in the kitchen fixtures.")
         self.init_robot_base_pos = self.door_fxtr
 
     def get_ep_meta(self):
