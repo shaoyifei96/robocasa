@@ -2112,4 +2112,4 @@ OBJ_GROUPS["food_set1"] = [
 ]
 OBJ_GROUPS["group1"] = ["apple", "carrot", "banana", "bowl", "can"]
 OBJ_GROUPS["container_set2"] = ["plate", "bowl"]
-OBJ_GROUPS["my_pnp"] = ["can"]
+OBJ_GROUPS["my_pnp"] = ["tomato"]
