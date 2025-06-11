@@ -1187,6 +1187,46 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             active=True,
         )
 
+        @sensor(modality="object")
+        def microwave_on(obs_cache):
+            # Check if there's a microwave in the scene and get its state
+            try:
+                microwave_fixture = self.get_fixture("Microwave")
+                is_on_val = 1.0 if hasattr(microwave_fixture, 'is_on') and microwave_fixture.is_on else 0.0
+            except (ValueError, AssertionError):  # Fails if no microwave
+                is_on_val = 0.0
+            return np.array([is_on_val])
+
+        observables["microwave_on"] = Observable(
+            name="microwave_on",
+            sensor=microwave_on,
+            sampling_rate=self.control_freq,
+            active=True,
+        )
+
+        @sensor(modality="object")
+        def stove_on(obs_cache):
+            # Check if there's a stove in the scene and get its state based on knob positions
+            try:
+                stove_fixture = self.get_fixture(FixtureType.STOVE)
+                if hasattr(stove_fixture, 'get_knobs_state'):
+                    knobs_state = stove_fixture.get_knobs_state(self)
+                    # If any knob is turned on (angle between 0.35 and 2*pi-0.35), stove is on
+                    is_on = any(0.35 <= abs(angle) <= 2 * np.pi - 0.35 for angle in knobs_state.values())
+                    is_on_val = 1.0 if is_on else 0.0
+                else:
+                    is_on_val = 0.0
+            except (ValueError, AssertionError):  # Fails if no stove
+                is_on_val = 0.0
+            return np.array([is_on_val])
+
+        observables["stove_on"] = Observable(
+            name="stove_on",
+            sensor=stove_on,
+            sampling_rate=self.control_freq,
+            active=True,
+        )
+
         return observables
 
     def _create_obj_sensors(self, obj_name, modality="object"):
@@ -1246,9 +1286,14 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         obj_fxtr = None
         for candidate in self.object_cfgs:
             if candidate["name"] == obj_name:
-                obj_fxtr = candidate["placement"]["fixture"]
-                if type(obj_fxtr) is str:
-                    obj_fxtr = self.get_fixture(obj_fxtr)
+                # Check if placement has a fixture - some objects are placed relative to other objects
+                if "fixture" in candidate["placement"]:
+                    obj_fxtr = candidate["placement"]["fixture"]
+                    if type(obj_fxtr) is str:
+                        obj_fxtr = self.get_fixture(obj_fxtr)
+                else:
+                    # Object is placed relative to another object, not directly on a fixture
+                    obj_fxtr = None
 
         has_door = hasattr(obj_fxtr, "door_name") if obj_fxtr is not None else False
         has_left_door = hasattr(obj_fxtr, "bodies") and len(obj_fxtr.bodies) >= 3 and "leftdoor" in obj_fxtr.bodies[1] if obj_fxtr is not None else False
@@ -1263,6 +1308,9 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             and isinstance(obj_fxtr.contact_geoms, (list, tuple))
             and any(self.knob in geom_name for geom_name in obj_fxtr.contact_geoms if isinstance(geom_name, str))
         )
+
+        has_microwave_button = (obj_fxtr is not None and type(obj_fxtr).__name__ == "Microwave")
+        has_drawer_inner_box = (obj_fxtr is not None and type(obj_fxtr).__name__ == "Drawer")
 
         @sensor(modality=modality)
         def obj_fxtr_pos_quat(obs_cache):
@@ -1300,6 +1348,16 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         def obj_fxtr_knob_pos_quat(obs_cache):
             knob_geom_name = [geom for geom in obj_fxtr.contact_geoms if self.knob in geom][0]
             return get_geom_pos_quat(knob_geom_name)
+
+        @sensor(modality=modality)
+        def obj_fxtr_microwave_start_button_pos_quat(obs_cache):
+            start_button_geom_name = f"{obj_fxtr.name}_start_button"
+            return get_geom_pos_quat(start_button_geom_name)
+
+        @sensor(modality=modality)
+        def obj_fxtr_drawer_inner_box_pos_quat(obs_cache):
+            inner_box_body_name = f"{obj_fxtr.name}_inner_box"
+            return get_body_pos_quat(inner_box_body_name)
 
         # @sensor(modality=modality)
         # def obj_pos(obs_cache):
@@ -1389,13 +1447,18 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                 sensors += [obj_fxtr_right_handle_pos_quat]
                 # names += [f"{right_handle_geom_name}_pos_quat"]
                 names += [f"right_door_handle_pos_quat"]
-            if (has_door or has_left_door or has_right_door) and (has_handle or has_left_handle or has_right_handle):
+            if (has_door or has_left_door or has_right_door) or (has_handle or has_left_handle or has_right_handle):
                 bottom_geom_name = obj_fxtr.visual_geoms[1]
                 sensors += [obj_fxtr_bottom_pos_quat]
                 # names += [f"{bottom_geom_name}_pos_quat"]
                 names += [f"bottom_pos_quat"]
                 sensors += [obj_fxtr_pos_quat]
-                names += [f"cabinet_pos_quat"]
+                if type(obj_fxtr).__name__ == "Microwave":
+                    names += [f"microwave_pos_quat"]
+                elif type(obj_fxtr).__name__ == "Drawer":
+                    names += [f"drawer_pos_quat"]
+                else:
+                    names += [f"cabinet_pos_quat"]
             if has_knob:
                 knob_body_name = [body for body in obj_fxtr.bodies if self.knob in body][0]
                 sensors += [obj_fxtr_knob_pos_quat]
@@ -1403,6 +1466,12 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                 names += [f"knob_pos_quat"]
                 sensors += [obj_fxtr_pos_quat]
                 names += [f"stovetop_pos_quat"]
+            if has_microwave_button:
+                sensors += [obj_fxtr_microwave_start_button_pos_quat]
+                names += [f"microwave_start_button_pos_quat"]
+            if has_drawer_inner_box:
+                sensors += [obj_fxtr_drawer_inner_box_pos_quat]
+                names += [f"drawer_inner_box_pos_quat"]
 
         return sensors, names
 
