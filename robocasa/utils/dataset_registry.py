@@ -310,6 +310,11 @@ MULTI_STAGE_TASK_DATASETS = OrderedDict(
         horizon=1000,
         activity="customized_tasks",
     ),
+    StoreFruitFull=dict(
+        human_path="v0.1/multi_stage/customized_tasks/StoreFruit/2025-04-23",  # using same demo as above since not used for learning
+        horizon=1000,
+        activity="customized_tasks",
+    ),
 )
 
 

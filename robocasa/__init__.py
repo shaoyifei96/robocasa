@@ -286,7 +286,12 @@ from robocasa.environments.kitchen.single_stage.kitchen_stove import (
     TurnOffStove,
     TurnOnStove,
 )
-from robocasa.environments.kitchen.multi_stage.customized_tasks.store_fruit import StoreFruit
+from robocasa.environments.kitchen.multi_stage.customized_tasks.store_fruit import (
+    StoreFruit,
+)
+from robocasa.environments.kitchen.multi_stage.customized_tasks.store_fruit_full import (
+    StoreFruitFull,
+)
 
 try:
     import mimicgen
