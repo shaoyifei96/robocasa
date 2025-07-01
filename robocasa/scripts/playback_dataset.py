@@ -64,39 +64,39 @@ def playback_trajectory_with_env(
 
     # Get all entity names for contact checking
 
-    print(env.get_contacts(env.robots[0].gripper["right"]))
+    # print(env.get_contacts(env.robots[0].gripper["right"]))
 
-    all_entity_names = (
-        [env.robots[0].name, env.robots[0].gripper["right"].name]
-        + list(env.fixtures.keys())
-        + list(env.objects.keys())
-    )
+    # all_entity_names = (
+    #     [env.robots[0].name, env.robots[0].gripper["right"].name]
+    #     + list(env.fixtures.keys())
+    #     + list(env.objects.keys())
+    # )
 
-    # Print initial state contacts
-    print("\nInitial state contacts:")
-    for i, entity1 in enumerate(all_entity_names):
-        for entity2 in all_entity_names[i + 1 :]:
-            # Get the corresponding objects from env
-            if entity1 in [env.robots[0].name]:
-                obj1 = env.robots[0].robot_model
-            elif entity1 == env.robots[0].gripper["right"].name:
-                obj1 = env.robots[0].gripper["right"]
-            elif entity1 in list(env.fixtures.keys()):
-                obj1 = env.fixtures[entity1]
-            else:
-                obj1 = env.objects[entity1]
+    # # Print initial state contacts
+    # print("\nInitial state contacts:")
+    # for i, entity1 in enumerate(all_entity_names):
+    #     for entity2 in all_entity_names[i + 1 :]:
+    #         # Get the corresponding objects from env
+    #         if entity1 in [env.robots[0].name]:
+    #             obj1 = env.robots[0].robot_model
+    #         elif entity1 == env.robots[0].gripper["right"].name:
+    #             obj1 = env.robots[0].gripper["right"]
+    #         elif entity1 in list(env.fixtures.keys()):
+    #             obj1 = env.fixtures[entity1]
+    #         else:
+    #             obj1 = env.objects[entity1]
 
-            if entity2 in [env.robots[0].name]:
-                obj2 = env.robots[0].robot_model
-            elif entity2 == env.robots[0].gripper["right"].name:
-                obj2 = env.robots[0].gripper["right"]
-            elif entity2 in list(env.fixtures.keys()):
-                obj2 = env.fixtures[entity2]
-            else:
-                obj2 = env.objects[entity2]
+    #         if entity2 in [env.robots[0].name]:
+    #             obj2 = env.robots[0].robot_model
+    #         elif entity2 == env.robots[0].gripper["right"].name:
+    #             obj2 = env.robots[0].gripper["right"]
+    #         elif entity2 in list(env.fixtures.keys()):
+    #             obj2 = env.fixtures[entity2]
+    #         else:
+    #             obj2 = env.objects[entity2]
 
-            if env.check_contact(obj1, obj2):
-                print(f"Contact between {entity1} and {entity2}")
+    #         if env.check_contact(obj1, obj2):
+    #             print(f"Contact between {entity1} and {entity2}")
 
     traj_len = states.shape[0]
     action_playback = actions is not None
@@ -135,30 +135,30 @@ def playback_trajectory_with_env(
         # print(env.get_contacts(env.door_fxtr))
 
         # Print contacts for current state
-        print(f"\nContacts at step {i+1}/{traj_len}:")
-        for i, entity1 in enumerate(all_entity_names):
-            for entity2 in all_entity_names[i + 1 :]:
-                # Get the corresponding objects from env
-                if entity1 in [env.robots[0].name]:
-                    obj1 = env.robots[0].robot_model
-                elif entity1 == env.robots[0].gripper["right"].name:
-                    obj1 = env.robots[0].gripper["right"]
-                elif entity1 in list(env.fixtures.keys()):
-                    obj1 = env.fixtures[entity1]
-                else:
-                    obj1 = env.objects[entity1]
+        # print(f"\nContacts at step {i+1}/{traj_len}:")
+        # for i, entity1 in enumerate(all_entity_names):
+        #     for entity2 in all_entity_names[i + 1 :]:
+        #         # Get the corresponding objects from env
+        #         if entity1 in [env.robots[0].name]:
+        #             obj1 = env.robots[0].robot_model
+        #         elif entity1 == env.robots[0].gripper["right"].name:
+        #             obj1 = env.robots[0].gripper["right"]
+        #         elif entity1 in list(env.fixtures.keys()):
+        #             obj1 = env.fixtures[entity1]
+        #         else:
+        #             obj1 = env.objects[entity1]
 
-                if entity2 in [env.robots[0].name]:
-                    obj2 = env.robots[0].robot_model
-                elif entity2 == env.robots[0].gripper["right"].name:
-                    obj2 = env.robots[0].gripper["right"]
-                elif entity2 in list(env.fixtures.keys()):
-                    obj2 = env.fixtures[entity2]
-                else:
-                    obj2 = env.objects[entity2]
+        #         if entity2 in [env.robots[0].name]:
+        #             obj2 = env.robots[0].robot_model
+        #         elif entity2 == env.robots[0].gripper["right"].name:
+        #             obj2 = env.robots[0].gripper["right"]
+        #         elif entity2 in list(env.fixtures.keys()):
+        #             obj2 = env.fixtures[entity2]
+        #         else:
+        #             obj2 = env.objects[entity2]
 
-                if env.check_contact(obj1, obj2):
-                    print(f"Contact between {entity1} and {entity2}")
+        #         if env.check_contact(obj1, obj2):
+        #             print(f"Contact between {entity1} and {entity2}")
 
         # on-screen render
         if render:

@@ -3,6 +3,7 @@ from copy import deepcopy
 import numpy as np
 
 from robocasa.models.fixtures import Fixture
+import logging
 
 STOVE_LOCATIONS = [
     "rear_left",
@@ -123,10 +124,11 @@ class Stove(Fixture):
         if mode == "off":
             joint_val = 0.0
         else:
-            if self.rng.uniform() < 0.5:
-                joint_val = rng.uniform(0.50, np.pi / 2)
-            else:
-                joint_val = rng.uniform(2 * np.pi - np.pi / 2, 2 * np.pi - 0.50)
+            logging.warning("using counter-clockwise for turning off stove")
+            # if self.rng.uniform() < 0.5:
+            joint_val = rng.uniform(0.50, np.pi / 2)
+            # else:
+            # joint_val = rng.uniform(2 * np.pi - np.pi / 2, 2 * np.pi - 0.50)
 
         env.sim.data.set_joint_qpos(
             "{}knob_{}_joint".format(self.naming_prefix, knob), joint_val

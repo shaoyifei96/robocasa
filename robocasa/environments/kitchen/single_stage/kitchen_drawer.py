@@ -1,4 +1,5 @@
 from robocasa.environments.kitchen.kitchen import *
+import logging
 
 
 class ManipulateDrawer(Kitchen):
@@ -47,7 +48,10 @@ class ManipulateDrawer(Kitchen):
             test_pos_left
         ) and not self.check_sidewall_contact(test_pos_left):
             # drawer is to the right of the robot
-            inits.append((robot_base_pos_left, robot_base_ori_left, "right"))
+            # inits.append((robot_base_pos_left, robot_base_ori_left, "right"))
+            logging.warning(
+                "drawer is to right of robot, skipping this option for policy though"
+            )
 
         # compute where the robot placement if it is to the right of the drawer
         (
