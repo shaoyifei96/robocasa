@@ -1683,6 +1683,8 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             assert len(matches) > 0
             # sample random key
             key = self.rng.choice(matches)
+            if type(id) != str and id.name == "TOP_DRAWER":
+                key = 'stack_1_main_group_4'
             return self.fixtures[key]
         else:
             ref_fixture = self.get_fixture(ref)
