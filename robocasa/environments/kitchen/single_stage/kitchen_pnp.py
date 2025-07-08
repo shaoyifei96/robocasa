@@ -903,7 +903,7 @@ class PnPStoveToCounter(PnP):
         cfgs.append(
             dict(
                 name="obj",
-                obj_groups=self.obj_groups,
+                obj_groups="my_pnp",
                 exclude_obj_groups=self.exclude_obj_groups,
                 graspable=True,
                 cookable=True,
