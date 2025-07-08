@@ -1227,6 +1227,27 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             active=True,
         )
 
+        @sensor(modality="object")
+        def sink_faucet_on(obs_cache):
+            # Check if there's a sink in the scene and get its faucet state
+            try:
+                sink_fixture = self.get_fixture(FixtureType.SINK)
+                if hasattr(sink_fixture, 'get_handle_state'):
+                    handle_state = sink_fixture.get_handle_state(self)
+                    is_on_val = 1.0 if handle_state["water_on"] else 0.0
+                else:
+                    is_on_val = 0.0
+            except (ValueError, AssertionError):  # Fails if no sink
+                is_on_val = 0.0
+            return np.array([is_on_val])
+
+        observables["sink_faucet_on"] = Observable(
+            name="sink_faucet_on",
+            sensor=sink_faucet_on,
+            sampling_rate=self.control_freq,
+            active=True,
+        )
+
         return observables
 
     def _create_obj_sensors(self, obj_name, modality="object"):
@@ -1245,7 +1266,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                 names (list): array of corresponding observable names
         """
 
-        debug = False
+        debug = True
 
         def get_body_pos_quat(body_name):
             """
@@ -1311,6 +1332,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
 
         has_microwave_button = (obj_fxtr is not None and type(obj_fxtr).__name__ == "Microwave")
         has_drawer_inner_box = (obj_fxtr is not None and type(obj_fxtr).__name__ == "Drawer")
+        has_sink_faucet = (obj_fxtr is not None and type(obj_fxtr).__name__ == "Sink")
 
         @sensor(modality=modality)
         def obj_fxtr_pos_quat(obs_cache):
@@ -1358,6 +1380,18 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         def obj_fxtr_drawer_inner_box_pos_quat(obs_cache):
             inner_box_body_name = f"{obj_fxtr.name}_inner_box"
             return get_body_pos_quat(inner_box_body_name)
+
+        @sensor(modality=modality)
+        def obj_fxtr_sink_faucet_handle_pos_quat(obs_cache):
+            # Get the sink faucet handle position and orientation
+            # Use the handle_main geom which is the actual handle geometry
+            handle_geom_name = f"{obj_fxtr.name}_handle_main"
+            return get_geom_pos_quat(handle_geom_name)
+
+        @sensor(modality=modality)
+        def obj_fxtr_sink_pos_quat(obs_cache):
+            return get_body_pos_quat(obj_fxtr.root_body)
+
 
         # @sensor(modality=modality)
         # def obj_pos(obs_cache):
@@ -1472,6 +1506,11 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             if has_drawer_inner_box:
                 sensors += [obj_fxtr_drawer_inner_box_pos_quat]
                 names += [f"drawer_inner_box_pos_quat"]
+            if has_sink_faucet:
+                sensors += [obj_fxtr_sink_faucet_handle_pos_quat]
+                names += [f"sink_faucet_handle_pos_quat"]
+                sensors += [obj_fxtr_sink_pos_quat] 
+                names += [f"sink_pos_quat"]
 
         return sensors, names
 
