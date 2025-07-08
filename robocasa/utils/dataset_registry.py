@@ -315,6 +315,11 @@ MULTI_STAGE_TASK_DATASETS = OrderedDict(
         horizon=1200,
         activity="customized_tasks",
     ),
+    PlaceTomatoesFromPanToPlates=dict(
+        human_path="v0.1/multi_stage/customized_tasks/PlaceTomatoesFromPanToPlates/2025-05-01",
+        horizon=1200,
+        activity="customized_tasks",
+    ),
 )
 
 

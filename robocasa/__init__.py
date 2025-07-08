@@ -277,6 +277,7 @@ from robocasa.environments.kitchen.single_stage.kitchen_pnp import (
     PnPCounterToSink,
     PnPMicrowaveToCounter,
     PnPSinkToCounter,
+    PnPStoveToCounter,
 )
 from robocasa.environments.kitchen.single_stage.kitchen_sink import (
     TurnOffSinkFaucet,
@@ -286,14 +287,10 @@ from robocasa.environments.kitchen.single_stage.kitchen_stove import (
     TurnOffStove,
     TurnOnStove,
 )
-from robocasa.environments.kitchen.multi_stage.customized_tasks.store_fruit import (
-    StoreFruit,
-)
-
-# from robocasa.environments.kitchen.multi_stage.customized_tasks.store_fruit_full import StoreFruitInCabinet
-from robocasa.environments.kitchen.multi_stage.customized_tasks.cook_cheese_and_tomatoes import (
-    CookCheeseAndTomatoes,
-)
+from robocasa.environments.kitchen.multi_stage.customized_tasks.store_fruit import StoreFruit
+from robocasa.environments.kitchen.multi_stage.customized_tasks.store_fruit_full import StoreFruitFull
+from robocasa.environments.kitchen.multi_stage.customized_tasks.cook_cheese_and_tomatoes import CookCheeseAndTomatoes
+from robocasa.environments.kitchen.multi_stage.customized_tasks.place_tomatoes_from_pan_to_plates import PlaceTomatoesFromPanToPlates
 
 try:
     import mimicgen
