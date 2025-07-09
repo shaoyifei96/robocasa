@@ -30,7 +30,7 @@ class CookCheeseAndTomatoes(Kitchen):
             self.counter = self.fixture_refs["counter"]
             self.stove = self.fixture_refs["stove"]
         else:
-            # Pick first left-oriented cabinet for cab1
+            """ # Pick first left-oriented cabinet for cab1
             cab_candidates = [
                 fxtr
                 for fxtr in self.fixtures.values()
@@ -39,7 +39,13 @@ class CookCheeseAndTomatoes(Kitchen):
             assert len(cab_candidates) >= 2, "Need at least two cabinet fixtures in the scene."
             self.cab1 = cab_candidates[0]
             # Choose a different cabinet for cab2
-            self.cab2 = next(f for f in cab_candidates if f != self.cab1)
+            self.cab2 = next(f for f in cab_candidates if f != self.cab1) """
+            for fxtr in self.fixtures.values():
+                if fxtr.name == "cab_1_left_group":
+                    self.cab1 = fxtr
+                elif fxtr.name == "cab_2_left_group":
+                    self.cab2 = fxtr
+            assert self.cab1 is not None and self.cab2 is not None, "Could not find both cabinets."
             self.fixture_refs["cab1"] = self.cab1
             self.fixture_refs["cab2"] = self.cab2
 
@@ -122,7 +128,22 @@ class CookCheeseAndTomatoes(Kitchen):
                 placement=dict(
                     fixture=self.cab1,
                     size=(0.50, 0.20),
-                    pos=(-0.5, -1.0),
+                    pos=(0.0, -1.0),
+                ),
+            )
+        )
+        
+        # Door of first cabinet
+        cfgs.append(
+            dict(
+                name="door1",
+                obj_groups="all",
+                graspable=True,
+                microwavable=False,
+                placement=dict(
+                    fixture=self.cab1,
+                    size=(0.30, 0.30),
+                    pos=(None, -1.0),
                 ),
             )
         )
@@ -136,34 +157,27 @@ class CookCheeseAndTomatoes(Kitchen):
                 placement=dict(
                     fixture=self.cab2,
                     size=(0.50, 0.20),
-                    pos=(0.5, -1.0),
+                    pos=(0.0, -1.0),
+                ),
+            )
+        )
+        
+        # Door of second cabinet
+        cfgs.append(
+            dict(
+                name="door2",
+                obj_groups="all",
+                graspable=True,
+                microwavable=False,
+                placement=dict(
+                    fixture=self.cab2,
+                    size=(0.30, 0.30),
+                    pos=(None, -1.0),
                 ),
             )
         )
 
-        # Optional distractors
-        cfgs.append(
-            dict(
-                name="distr_cab1",
-                obj_groups="all",
-                placement=dict(
-                    fixture=self.cab1,
-                    size=(1.0, 0.20),
-                    pos=(0.0, 1.0),
-                ),
-            )
-        )
-        cfgs.append(
-            dict(
-                name="distr_cab2",
-                obj_groups="all",
-                placement=dict(
-                    fixture=self.cab2,
-                    size=(1.0, 0.20),
-                    pos=(0.0, 1.0),
-                ),
-            )
-        )
+
 
         return cfgs
 

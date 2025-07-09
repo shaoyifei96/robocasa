@@ -1265,6 +1265,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                 sensors (list): Array of sensors for the given obj
                 names (list): array of corresponding observable names
         """
+        # TODO: Felix: this function really needs to be refactored. It's a mess. It doesn't deal with two cabinets, etc.
 
         debug = True
 
@@ -1486,6 +1487,17 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                 sensors += [obj_fxtr_bottom_pos_quat]
                 # names += [f"{bottom_geom_name}_pos_quat"]
                 names += [f"bottom_pos_quat"]
+                # Add fixture-specific aliases to avoid name collisions when multiple
+                # fixtures of the same type (e.g., multiple cabinets) are present.
+                unique_bottom_name = f"{bottom_geom_name}_pos_quat"
+                if unique_bottom_name not in names:
+                    sensors.append(obj_fxtr_bottom_pos_quat)
+                    names.append(unique_bottom_name)
+
+                unique_root_name = f"{obj_fxtr.name}_pos_quat"
+                if unique_root_name not in names:
+                    sensors.append(obj_fxtr_pos_quat)
+                    names.append(unique_root_name)
                 sensors += [obj_fxtr_pos_quat]
                 if type(obj_fxtr).__name__ == "Microwave":
                     names += [f"microwave_pos_quat"]
