@@ -23,56 +23,56 @@ class CookCheeseAndTomatoes(Kitchen):
         super()._setup_kitchen_references()
 
         # Register two distinct cabinets
-        if "cab1" in self.fixture_refs:
+        if "cab_1" in self.fixture_refs:
             # If episode meta already has refs (e.g., loading from dataset), reuse them
-            self.cab1 = self.fixture_refs["cab1"]
-            self.cab2 = self.fixture_refs["cab2"]
+            self.cab_1 = self.fixture_refs["cab_1"]
+            self.cab_2 = self.fixture_refs["cab_2"]
             self.counter = self.fixture_refs["counter"]
             self.stove = self.fixture_refs["stove"]
         else:
-            """ # Pick first left-oriented cabinet for cab1
+            """ # Pick first left-oriented cabinet for cab_1
             cab_candidates = [
                 fxtr
                 for fxtr in self.fixtures.values()
                 if "cab" in fxtr.name.lower() and hasattr(fxtr, "orientation")
             ]
             assert len(cab_candidates) >= 2, "Need at least two cabinet fixtures in the scene."
-            self.cab1 = cab_candidates[0]
-            # Choose a different cabinet for cab2
-            self.cab2 = next(f for f in cab_candidates if f != self.cab1) """
+            self.cab_1 = cab_candidates[0]
+            # Choose a different cabinet for cab_2
+            self.cab_2 = next(f for f in cab_candidates if f != self.cab_1) """
             for fxtr in self.fixtures.values():
                 if fxtr.name == "cab_1_left_group":
-                    self.cab1 = fxtr
+                    self.cab_1 = fxtr
                 elif fxtr.name == "cab_2_left_group":
-                    self.cab2 = fxtr
-            assert self.cab1 is not None and self.cab2 is not None, "Could not find both cabinets."
-            self.fixture_refs["cab1"] = self.cab1
-            self.fixture_refs["cab2"] = self.cab2
+                    self.cab_2 = fxtr
+            assert self.cab_1 is not None and self.cab_2 is not None, "Could not find both cabinets."
+            self.fixture_refs["cab_1"] = self.cab_1
+            self.fixture_refs["cab_2"] = self.cab_2
 
-            self.stove = self.get_fixture(FixtureType.STOVE)
+            self.stove_1 = self.get_fixture(FixtureType.STOVE)
             if "task_refs" in self._ep_meta:
-                self.knob = self._ep_meta["task_refs"]["knob"]
-                self.cookware_burner = self._ep_meta["task_refs"]["cookware_burner"]
+                self.knob_1 = self._ep_meta["task_refs"]["knob_1"]
+                self.cookware_burner_1 = self._ep_meta["task_refs"]["cookware_burner_1"]
             else:
                 valid_knobs = [
-                    k for (k, v) in self.stove.knob_joints.items() if v is not None
+                    k for (k, v) in self.stove_1.knob_joints.items() if v is not None
                 ]
                 if self.knob_id == "random":
-                    self.knob = self.rng.choice(list(valid_knobs))
+                    self.knob_1 = self.rng.choice(list(valid_knobs))
                 else:
                     assert self.knob_id in valid_knobs
-                    self.knob = self.knob
-                self.cookware_burner = (
-                    self.knob
+                    self.knob_1 = self.knob_1
+                self.cookware_burner_1 = (
+                    self.knob_1
                     if self.rng.uniform() <= 0.50
                     else self.rng.choice(valid_knobs)
                 )
-                self.counter = self.register_fixture_ref(
-                "counter", dict(id=FixtureType.COUNTER, ref=self.stove, size=(0.30, 0.40))
+                self.counter_1 = self.register_fixture_ref(
+                "counter_1", dict(id=FixtureType.COUNTER, ref=self.stove_1, size=(0.30, 0.40))
             )
 
         # Initial robot base location
-        self.init_robot_base_pos = self.cab1
+        self.init_robot_base_pos = self.cab_1
 
     def get_ep_meta(self):
         ep_meta = super().get_ep_meta()
@@ -84,8 +84,8 @@ class CookCheeseAndTomatoes(Kitchen):
     def _reset_internal(self):
         """Ensure cabinet doors start closed."""
         super()._reset_internal()
-        self.cab1.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
-        self.cab2.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
+        self.cab_1.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
+        self.cab_2.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
 
     def _get_obj_cfgs(self):
         cfgs = []
@@ -93,10 +93,10 @@ class CookCheeseAndTomatoes(Kitchen):
         # Pan on stove
         cfgs.append(
             dict(
-                name="pan",
+                name="pan_1",
                 obj_groups="pan",
                 placement=dict(
-                    fixture=self.stove,
+                    fixture=self.stove_1,
                     ensure_object_boundary_in_range=False,
                     size=(0.02, 0.02),
                     pos=(0.0, 0.0),
@@ -107,12 +107,12 @@ class CookCheeseAndTomatoes(Kitchen):
         # Plate on counter
         cfgs.append(
             dict(
-                name="plate",
+                name="plate_1",
                 obj_groups="plate",
                 graspable=False,
                 placement=dict(
-                    fixture=self.counter,
-                    sample_region_kwargs=dict(ref=self.stove),
+                    fixture=self.counter_1,
+                    sample_region_kwargs=dict(ref=self.stove_1),
                     size=(0.30, 0.30),
                     pos=("ref", -1.0),
                 ),
@@ -122,11 +122,11 @@ class CookCheeseAndTomatoes(Kitchen):
         # Tomato in first cabinet
         cfgs.append(
             dict(
-                name="tomato",
+                name="tomato_1",
                 obj_groups="tomato",
                 graspable=True,
                 placement=dict(
-                    fixture=self.cab1,
+                    fixture=self.cab_1,
                     size=(0.50, 0.20),
                     pos=(0.0, -1.0),
                 ),
@@ -136,12 +136,12 @@ class CookCheeseAndTomatoes(Kitchen):
         # Door of first cabinet
         cfgs.append(
             dict(
-                name="door1",
+                name="door_1",
                 obj_groups="all",
                 graspable=True,
                 microwavable=False,
                 placement=dict(
-                    fixture=self.cab1,
+                    fixture=self.cab_1,
                     size=(0.30, 0.30),
                     pos=(None, -1.0),
                 ),
@@ -151,11 +151,11 @@ class CookCheeseAndTomatoes(Kitchen):
         # Cheese in second cabinet
         cfgs.append(
             dict(
-                name="cheese",
+                name="cheese_1",
                 obj_groups="cheese",
                 graspable=True,
                 placement=dict(
-                    fixture=self.cab2,
+                    fixture=self.cab_2,
                     size=(0.50, 0.20),
                     pos=(0.0, -1.0),
                 ),
@@ -165,12 +165,12 @@ class CookCheeseAndTomatoes(Kitchen):
         # Door of second cabinet
         cfgs.append(
             dict(
-                name="door2",
+                name="door_2",
                 obj_groups="all",
                 graspable=True,
                 microwavable=False,
                 placement=dict(
-                    fixture=self.cab2,
+                    fixture=self.cab_2,
                     size=(0.30, 0.30),
                     pos=(None, -1.0),
                 ),
@@ -182,7 +182,7 @@ class CookCheeseAndTomatoes(Kitchen):
         return cfgs
 
     def _check_success(self):
-        tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato", "plate")
-        cheese_on_plate = OU.check_obj_in_receptacle(self, "cheese", "plate")
+        tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato_1", "plate_1")
+        cheese_on_plate = OU.check_obj_in_receptacle(self, "cheese_1", "plate_1")
         gripper_far = OU.gripper_obj_far(self)
         return tomato_on_plate and cheese_on_plate and gripper_far 
