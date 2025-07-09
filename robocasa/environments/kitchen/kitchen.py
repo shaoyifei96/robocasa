@@ -1115,7 +1115,26 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
             sensors += obj_sensors
             names += obj_sensor_names
             actives += [True] * len(obj_sensors)
-
+        
+        # >>> remove duplicate names and sensors
+        duplicate_idx = []
+        for i, name_i in enumerate(names):
+            # Detect cases such as: 'cab_pos_quat' and 'cab_1_pos_quat' -> should remove 'cab_pos_quat'
+            not_unique = re.match(r".*_(\d+)_pos_quat$", name_i)
+            if not_unique:
+                obj_name = name_i[:not_unique.start(1)-1] + '_pos_quat'
+                for j, name_j in enumerate(names):
+                    if name_j == obj_name:
+                        duplicate_idx.append(j)
+            # Detect exact duplicates (keep first occurrence, remove later ones)
+            for j, name_j in enumerate(names):
+                if j > i and name_j == name_i:
+                    duplicate_idx.append(j)
+        names = [name for i, name in enumerate(names) if i not in duplicate_idx]
+        sensors = [sensor for i, sensor in enumerate(sensors) if i not in duplicate_idx]
+        actives = [active for i, active in enumerate(actives) if i not in duplicate_idx]
+        # <<< remove duplicate names and sensors
+                
         # Create observables
         for name, s, active in zip(names, sensors, actives):
             observables[name] = Observable(
@@ -1306,6 +1325,8 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         ### TODO: this was stolen from pick-place - do we want to move this into utils to share it? ###
         pf = self.robots[0].robot_model.naming_prefix
 
+        
+
         obj_fxtr = None
         for candidate in self.object_cfgs:
             if candidate["name"] == obj_name:
@@ -1449,6 +1470,12 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         names = [
             f"{obj_name}_pos_quat",
         ]
+
+        index_str = ''
+        not_unique = re.match(r".*_(\d+)$", obj_name)
+        if not_unique:
+            index_str = '_' + not_unique.group(1)
+
         if obj_fxtr is not None:
             # fxtr_body_name = obj_fxtr.root_body
             # sensors += [obj_fxtr_pos_quat]
@@ -1457,62 +1484,62 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                 door_body_name = obj_fxtr.door_name
                 sensors += [obj_fxtr_door_pos_quat]
                 # names += [f"{door_body_name}_pos_quat"]
-                names += [f"door_pos_quat"]
+                names += [f"door{index_str}_pos_quat"]
             if has_left_door:
                 left_door_body_name = obj_fxtr.bodies[1]
                 sensors += [obj_fxtr_left_door_pos_quat]
                 # names += [f"{left_door_body_name}_pos_quat"]
-                names += [f"leftdoor_pos_quat"]
+                names += [f"leftdoor{index_str}_pos_quat"]
             if has_right_door:
                 right_door_body_name = obj_fxtr.bodies[2]
                 sensors += [obj_fxtr_right_door_pos_quat]
                 # names += [f"{right_door_body_name}_pos_quat"]
-                names += [f"rightdoor_pos_quat"]
+                names += [f"rightdoor{index_str}_pos_quat"]
             if has_handle:
                 handle_geom_name = obj_fxtr.handle_name
                 sensors += [obj_fxtr_handle_pos_quat]
                 # names += [f"{handle_geom_name}_pos_quat"]
-                names += [f"handle_pos_quat"]
+                names += [f"handle{index_str}_pos_quat"]
             if has_left_handle:
                 left_handle_geom_name = obj_fxtr.left_handle_name
                 sensors += [obj_fxtr_left_handle_pos_quat]
                 # names += [f"{left_handle_geom_name}_pos_quat"]
-                names += [f"left_door_handle_pos_quat"]
+                names += [f"left_door_handle{index_str}_pos_quat"]
             if has_right_handle:
                 right_handle_geom_name = obj_fxtr.right_handle_name
                 sensors += [obj_fxtr_right_handle_pos_quat]
                 # names += [f"{right_handle_geom_name}_pos_quat"]
-                names += [f"right_door_handle_pos_quat"]
+                names += [f"right_door_handle{index_str}_pos_quat"]
             if (has_door or has_left_door or has_right_door) or (has_handle or has_left_handle or has_right_handle):
                 bottom_geom_name = obj_fxtr.visual_geoms[1]
                 sensors += [obj_fxtr_bottom_pos_quat]
                 # names += [f"{bottom_geom_name}_pos_quat"]
-                names += [f"bottom_pos_quat"]
+                names += [f"bottom{index_str}_pos_quat"]
                 sensors += [obj_fxtr_pos_quat]
                 if type(obj_fxtr).__name__ == "Microwave":
-                    names += [f"microwave_pos_quat"]
+                    names += [f"microwave{index_str}_pos_quat"]
                 elif type(obj_fxtr).__name__ == "Drawer":
-                    names += [f"drawer_pos_quat"]
+                    names += [f"drawer{index_str}_pos_quat"]
                 else:
-                    names += [f"cab_pos_quat"]
+                    names += [f"cab{index_str}_pos_quat"]
             if has_knob:
                 knob_body_name = [body for body in obj_fxtr.bodies if self.knob in body][0]
                 sensors += [obj_fxtr_knob_pos_quat]
                 # names += [f"{knob_body_name}_pos_quat"]
-                names += [f"knob_pos_quat"]
+                names += [f"knob{index_str}_pos_quat"]
                 sensors += [obj_fxtr_pos_quat]
-                names += [f"stovetop_pos_quat"]
+                names += [f"stovetop{index_str}_pos_quat"]
             if has_microwave_button:
                 sensors += [obj_fxtr_microwave_start_button_pos_quat]
-                names += [f"microwave_start_button_pos_quat"]
+                names += [f"microwave_start_button{index_str}_pos_quat"]
             if has_drawer_inner_box:
                 sensors += [obj_fxtr_drawer_inner_box_pos_quat]
-                names += [f"drawer_inner_box_pos_quat"]
+                names += [f"drawer_inner_box{index_str}_pos_quat"]
             if has_sink_faucet:
                 sensors += [obj_fxtr_sink_faucet_handle_pos_quat]
-                names += [f"sink_faucet_handle_pos_quat"]
+                names += [f"sink_faucet_handle{index_str}_pos_quat"]
                 sensors += [obj_fxtr_sink_pos_quat] 
-                names += [f"sink_pos_quat"]
+                names += [f"sink{index_str}_pos_quat"]
 
         return sensors, names
 
