@@ -1128,7 +1128,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                         duplicate_idx.append(j)
             # Detect exact duplicates (keep first occurrence, remove later ones)
             for j, name_j in enumerate(names):
-                if j > i and name_j == name_i:
+                if j < i and name_j == name_i:
                     duplicate_idx.append(j)
         names = [name for i, name in enumerate(names) if i not in duplicate_idx]
         sensors = [sensor for i, sensor in enumerate(sensors) if i not in duplicate_idx]
