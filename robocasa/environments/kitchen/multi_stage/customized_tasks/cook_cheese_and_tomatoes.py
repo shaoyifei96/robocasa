@@ -23,31 +23,21 @@ class CookCheeseAndTomatoes(Kitchen):
         super()._setup_kitchen_references()
 
         # Register two distinct cabinets
-        if "cab_1" in self.fixture_refs:
+        if "cabinet_1" in self.fixture_refs:
             # If episode meta already has refs (e.g., loading from dataset), reuse them
-            self.cab_1 = self.fixture_refs["cab_1"]
-            self.cab_2 = self.fixture_refs["cab_2"]
+            self.cabinet_1 = self.fixture_refs["cabinet_1"]
+            self.cabinet_2 = self.fixture_refs["cabinet_2"]
             self.counter = self.fixture_refs["counter"]
             self.stove = self.fixture_refs["stove"]
         else:
-            """ # Pick first left-oriented cabinet for cab_1
-            cab_candidates = [
-                fxtr
-                for fxtr in self.fixtures.values()
-                if "cab" in fxtr.name.lower() and hasattr(fxtr, "orientation")
-            ]
-            assert len(cab_candidates) >= 2, "Need at least two cabinet fixtures in the scene."
-            self.cab_1 = cab_candidates[0]
-            # Choose a different cabinet for cab_2
-            self.cab_2 = next(f for f in cab_candidates if f != self.cab_1) """
             for fxtr in self.fixtures.values():
-                if fxtr.name == "cab_1_left_group":
-                    self.cab_1 = fxtr
-                elif fxtr.name == "cab_2_left_group":
-                    self.cab_2 = fxtr
-            assert self.cab_1 is not None and self.cab_2 is not None, "Could not find both cabinets."
-            self.fixture_refs["cab_1"] = self.cab_1
-            self.fixture_refs["cab_2"] = self.cab_2
+                if fxtr.name == "cabinet_1_left_group":
+                    self.cabinet_1 = fxtr
+                elif fxtr.name == "cabinet_2_left_group":
+                    self.cabinet_2 = fxtr
+            assert self.cabinet_1 is not None and self.cabinet_2 is not None, "Could not find both cabinets."
+            self.fixture_refs["cabinet_1"] = self.cabinet_1
+            self.fixture_refs["cabinet_2"] = self.cabinet_2
 
             self.stove = self.get_fixture(FixtureType.STOVE)
             if "task_refs" in self._ep_meta:
@@ -72,7 +62,7 @@ class CookCheeseAndTomatoes(Kitchen):
             )
 
         # Initial robot base location
-        self.init_robot_base_pos = self.cab_1
+        self.init_robot_base_pos = self.cabinet_1
 
     def get_ep_meta(self):
         ep_meta = super().get_ep_meta()
@@ -84,8 +74,8 @@ class CookCheeseAndTomatoes(Kitchen):
     def _reset_internal(self):
         """Ensure cabinet doors start closed."""
         super()._reset_internal()
-        self.cab_1.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
-        self.cab_2.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
+        self.cabinet_1.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
+        self.cabinet_2.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
 
     def _get_obj_cfgs(self):
         cfgs = []
@@ -126,7 +116,7 @@ class CookCheeseAndTomatoes(Kitchen):
                 obj_groups="tomato",
                 graspable=True,
                 placement=dict(
-                    fixture=self.cab_1,      # cabinet fixture
+                    fixture=self.cabinet_1,      # cabinet fixture
                     size=(0.0, 0.0),         # zero-sized inner region
                     pos=(0.0, 0.0),          # centre of the reset region
                     rotation=(0, 0),         # (optional) keep orientation fixed
@@ -143,7 +133,7 @@ class CookCheeseAndTomatoes(Kitchen):
                 graspable=True,
                 microwavable=False,
                 placement=dict(
-                    fixture=self.cab_1,
+                    fixture=self.cabinet_1,
                     size=(0.30, 0.30),
                     pos=(None, -1.0),
                 ),
@@ -157,7 +147,7 @@ class CookCheeseAndTomatoes(Kitchen):
                 obj_groups="cheese",
                 graspable=True,
                 placement=dict(
-                    fixture=self.cab_2,
+                    fixture=self.cabinet_2,
                     size=(0.0, 0.0),
                     pos=(0.0, 0.0),
                     rotation=(0, 0),
@@ -174,7 +164,7 @@ class CookCheeseAndTomatoes(Kitchen):
                 graspable=True,
                 microwavable=False,
                 placement=dict(
-                    fixture=self.cab_2,
+                    fixture=self.cabinet_2,
                     size=(0.30, 0.30),
                     pos=(None, -1.0),
                 ),

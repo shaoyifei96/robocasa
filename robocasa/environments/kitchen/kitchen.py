@@ -1521,7 +1521,7 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                 elif type(obj_fxtr).__name__ == "Drawer":
                     names += [f"drawer{index_str}_pos_quat"]
                 else:
-                    names += [f"cab{index_str}_pos_quat"]
+                    names += [f"cabinet{index_str}_pos_quat"]
             if has_knob:
                 knob_body_name = [body for body in obj_fxtr.bodies if self.knob in body][0]
                 sensors += [obj_fxtr_knob_pos_quat]
