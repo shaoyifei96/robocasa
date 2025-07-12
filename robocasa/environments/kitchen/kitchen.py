@@ -1134,8 +1134,10 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         sensors = [sensor for i, sensor in enumerate(sensors) if i not in duplicate_idx]
         actives = [active for i, active in enumerate(actives) if i not in duplicate_idx]
         # <<< remove duplicate names and sensors
-        GlobalSettings.robo_kitchen_obj_names[:] = names
-        CFG.robo_kitchen_obj_names[:] = names
+        GlobalSettings.robo_kitchen_obj_names.extend(names)
+        GlobalSettings.robo_kitchen_obj_names = list(set(GlobalSettings.robo_kitchen_obj_names))
+        CFG.robo_kitchen_obj_names.extend(names)
+        CFG.robo_kitchen_obj_names = list(set(CFG.robo_kitchen_obj_names))
                 
         # Create observables
         for name, s, active in zip(names, sensors, actives):
