@@ -42,7 +42,7 @@ from robocasa.utils.texture_swap import (
     replace_wall_texture,
 )
 from robocasa.utils.config_utils import refactor_composite_controller_config
-
+from predicators.settings import GlobalSettings, CFG
 
 REGISTERED_KITCHEN_ENVS = {}
 
@@ -1134,6 +1134,8 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         sensors = [sensor for i, sensor in enumerate(sensors) if i not in duplicate_idx]
         actives = [active for i, active in enumerate(actives) if i not in duplicate_idx]
         # <<< remove duplicate names and sensors
+        GlobalSettings.robo_kitchen_obj_names[:] = names
+        CFG.robo_kitchen_obj_names[:] = names
                 
         # Create observables
         for name, s, active in zip(names, sensors, actives):
@@ -1472,9 +1474,27 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         ]
 
         index_str = ''
-        not_unique = re.match(r".*_(\d+)$", obj_name)
-        if not_unique:
-            index_str = '_' + not_unique.group(1)
+        # Use the MuJoCo body id of the parent fixture (if it exists) to generate a
+        # unique, deterministic identifier for any sensors tied to that fixture.
+        # This helps prevent the creation of duplicate observables when multiple
+        # logical objects share the same physical entity (e.g., two items placed
+        # inside the same cabinet). If we cannot retrieve a body id (e.g., for
+        # free–floating objects without a fixture), we fall back to the previous
+        # behaviour of extracting a numeric suffix from the object name.
+
+        if obj_fxtr is not None:
+            try:
+                fixture_bid = self.sim.model.body_name2id(obj_fxtr.root_body)
+                index_str = f"_{fixture_bid}"
+            except Exception:
+                # Fallback to old behaviour if the body id is unavailable for any reason
+                match = re.match(r".*_(\d+)$", obj_name)
+                if match:
+                    index_str = f"_{match.group(1)}"
+        else:
+            match = re.match(r".*_(\d+)$", obj_name)
+            if match:
+                index_str = f"_{match.group(1)}"
 
         if obj_fxtr is not None:
             # fxtr_body_name = obj_fxtr.root_body

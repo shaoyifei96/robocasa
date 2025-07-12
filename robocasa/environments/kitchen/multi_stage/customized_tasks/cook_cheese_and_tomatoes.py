@@ -31,9 +31,9 @@ class CookCheeseAndTomatoes(Kitchen):
             self.stove = self.fixture_refs["stove"]
         else:
             for fxtr in self.fixtures.values():
-                if fxtr.name == "cabinet_1_left_group":
+                if fxtr.name == "cab_1_left_group":
                     self.cabinet_1 = fxtr
-                elif fxtr.name == "cabinet_2_left_group":
+                elif fxtr.name == "cab_2_left_group":
                     self.cabinet_2 = fxtr
             assert self.cabinet_1 is not None and self.cabinet_2 is not None, "Could not find both cabinets."
             self.fixture_refs["cabinet_1"] = self.cabinet_1
@@ -126,19 +126,19 @@ class CookCheeseAndTomatoes(Kitchen):
         )
         
         # Door of first cabinet
-        cfgs.append(
-            dict(
-                name="door_1",
-                obj_groups="all",
-                graspable=True,
-                microwavable=False,
-                placement=dict(
-                    fixture=self.cabinet_1,
-                    size=(0.30, 0.30),
-                    pos=(None, -1.0),
-                ),
-            )
-        )
+        # cfgs.append(
+        #     dict(
+        #         name="door_1",
+        #         obj_groups="all",
+        #         graspable=True,
+        #         microwavable=False,
+        #         placement=dict(
+        #             fixture=self.cabinet_1,
+        #             size=(0.30, 0.30),
+        #             pos=(None, -1.0),
+        #         ),
+        #     )
+        # )
 
         # Cheese in second cabinet – same idea
         cfgs.append(
@@ -157,19 +157,19 @@ class CookCheeseAndTomatoes(Kitchen):
         )
         
         # Door of second cabinet
-        cfgs.append(
-            dict(
-                name="door_2",
-                obj_groups="all",
-                graspable=True,
-                microwavable=False,
-                placement=dict(
-                    fixture=self.cabinet_2,
-                    size=(0.30, 0.30),
-                    pos=(None, -1.0),
-                ),
-            )
-        )
+        # cfgs.append(
+        #     dict(
+        #         name="door_2",
+        #         obj_groups="all",
+        #         graspable=True,
+        #         microwavable=False,
+        #         placement=dict(
+        #             fixture=self.cabinet_2,
+        #             size=(0.30, 0.30),
+        #             pos=(None, -1.0),
+        #         ),
+        #     )
+        # )
 
 
 
