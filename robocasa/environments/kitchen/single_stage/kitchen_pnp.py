@@ -202,13 +202,22 @@ class PnPCabToCounter(PnP):
         The cabinet to pick object from and the counter to place it on
         """
         super()._setup_kitchen_references()
-        self.cab = self.register_fixture_ref(
-            "cab",
-            dict(id=self.cab_id),
-        )
+        # self.cab = self.register_fixture_ref("cab", dict(id=self.cab_id))
+        left_cabinet_names = [
+            name
+            for name in self.fixtures.keys()
+            if "cab" in name.lower()
+            and hasattr(self.fixtures[name], "orientation")
+            and "left" in self.fixtures[name].orientation.lower()
+        ]
+        if left_cabinet_names:
+            self.cab = self.fixtures[left_cabinet_names[0]]
+        else:
+            self.cab = self.register_fixture_ref("cab", dict(id=self.cab_id))
+
+            # raise ValueError("No left cabinet found in the kitchen fixtures.")
         self.counter = self.register_fixture_ref(
-            "counter",
-            dict(id=FixtureType.COUNTER, ref=self.cab),
+            "counter", dict(id=FixtureType.COUNTER, ref=self.cab)
         )
         self.init_robot_base_pos = self.cab
 
@@ -241,13 +250,14 @@ class PnPCabToCounter(PnP):
         cfgs.append(
             dict(
                 name="obj",
-                obj_groups=self.obj_groups,
-                exclude_obj_groups=self.exclude_obj_groups,
+                obj_groups="my_pnp",
                 graspable=True,
                 placement=dict(
-                    fixture=self.cab,
-                    size=(0.50, 0.20),
-                    pos=(0, -1.0),
+                    fixture=self.cab,      # cabinet fixture
+                    size=(0.0, 0.0),         # zero-sized inner region
+                    pos=(0.0, 0.0),          # centre of the reset region
+                    rotation=(0, 0),         # (optional) keep orientation fixed
+                    margin=0.0,              # (optional) don’t shrink the usable area
                 ),
             )
         )
@@ -268,18 +278,18 @@ class PnPCabToCounter(PnP):
                 ),
             )
         )
-        cfgs.append(
-            dict(
-                name="distr_cab",
-                obj_groups="all",
-                placement=dict(
-                    fixture=self.cab,
-                    size=(1.0, 0.20),
-                    pos=(0.0, 1.0),
-                    offset=(0.0, 0.0),
-                ),
-            )
-        )
+        # cfgs.append(
+        #     dict(
+        #         name="distr_cab",
+        #         obj_groups="all",
+        #         placement=dict(
+        #             fixture=self.cab,
+        #             size=(1.0, 0.20),
+        #             pos=(0.0, 1.0),
+        #             offset=(0.0, 0.0),
+        #         ),
+        #     )
+        # )
 
         return cfgs
 

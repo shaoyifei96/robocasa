@@ -1361,6 +1361,8 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         has_drawer_inner_box = (obj_fxtr is not None and type(obj_fxtr).__name__ == "Drawer")
         has_sink_faucet = (obj_fxtr is not None and type(obj_fxtr).__name__ == "Sink")
 
+        is_counter = (obj_fxtr is not None and type(obj_fxtr).__name__ == "Counter")
+
         @sensor(modality=modality)
         def obj_fxtr_pos_quat(obs_cache):
             return get_body_pos_quat(obj_fxtr.root_body)
@@ -1562,6 +1564,9 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
                 names += [f"sink_faucet_handle{index_str}_pos_quat"]
                 sensors += [obj_fxtr_sink_pos_quat] 
                 names += [f"sink{index_str}_pos_quat"]
+            elif is_counter:
+                sensors += [obj_fxtr_pos_quat]
+                names += [f"counter{index_str}_pos_quat"]
 
         return sensors, names
 
