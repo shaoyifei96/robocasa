@@ -58,6 +58,21 @@ class StoreFruit(Kitchen):
         Places a fruit object on the counter.
         """
         cfgs = []
+
+        cfgs.append(
+            dict(
+                name="door",
+                obj_groups="all",
+                graspable=True,
+                microwavable=False,
+                placement=dict(
+                    fixture=self.cab,
+                    size=(0.30, 0.30),
+                    pos=(None, -1.0),
+                ),
+            )
+        )
+
         cfgs.append(
             dict(
                 name="obj",
