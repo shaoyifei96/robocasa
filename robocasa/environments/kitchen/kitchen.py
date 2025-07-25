@@ -1212,6 +1212,22 @@ class Kitchen(ManipulationEnv, metaclass=KitchenEnvMeta):
         )
 
         @sensor(modality="object")
+        def wrist_pos_quat(obs_cache):
+            prefix      = self.robots[0].robot_model.naming_prefix        # e.g. "panda0_"
+            wrist_name  = f"{prefix}link7"                 # flange just before the hand
+            wrist_pos   = self.sim.data.get_body_xpos(wrist_name)
+            wrist_mat   = self.sim.data.get_body_xmat(wrist_name)
+            wrist_quat  = T.mat2quat(wrist_mat.reshape(3, 3))
+            return np.array(wrist_pos.tolist() + wrist_quat.tolist())
+
+        observables["wrist_pos_quat"] = Observable(
+            name="wrist_pos_quat",
+            sensor=wrist_pos_quat,
+            sampling_rate=self.control_freq,
+            active=True,
+        )
+
+        @sensor(modality="object")
         def microwave_on(obs_cache):
             # Check if there's a microwave in the scene and get its state
             try:
