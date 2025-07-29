@@ -58,7 +58,7 @@ class Sink(Fixture):
         if mode == "off":
             joint_val = 0.0
         elif mode == "on":
-            joint_val = rng.uniform(0.40, 0.50)
+            joint_val = rng.uniform(0.48, 0.50)
 
         env.sim.data.set_joint_qpos(
             "{}handle_joint".format(self.naming_prefix), joint_val
