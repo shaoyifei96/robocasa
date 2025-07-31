@@ -1,0 +1,112 @@
+# walls, floor
+room:
+  walls:
+    - name: wall
+      type: wall
+      size: [3, 1.5, 0.02]
+      pos: [1.5, 0, 1.5]
+
+    - name: wall_left
+      type: wall
+      wall_side: left
+      size: [1.8, 1.5, 0.02]
+      pos: [-0.4, -1.8, 1.5]
+
+    - name: wall_right
+      type: wall
+      wall_side: right
+      size: [1.8, 1.5, 0.02]
+      pos: [3.4, -1.8, 1.5]
+
+  floor:
+    - name: floor
+      type: floor
+      size: [3, 1.8, 0.02]
+      pos: [1.5, -1.8, 0]
+
+# fixtures on the main wall
+main_group:
+  # Bottom row (counters and stoves)
+  bottom_row:
+    - name: counter_left
+      type: counter
+      size: [1, 0.65, 1]
+      pos: [0.5, -0.325, 0.5]
+
+    - name: stovetop
+      type: stovetop
+      size: [null, 0.55, null]
+
+    - name: counter_stove
+      type: counter
+      size: [1, 0.65, 1]
+      align_to: counter_left
+      side: right
+      interior_obj: stovetop
+
+    - name: counter_right
+      type: counter
+      size: [1, 0.65, 1]
+      align_to: counter_stove
+      side: right
+
+  # Top row (cabinets)
+  top_row:
+    - name: cab_left
+      type: single_cabinet
+      default_config_name: cab_top
+      orientation: "left"
+      size: [0.5, 0.40, 0.92]
+      pos: [0.25, -0.20, 1.85]
+
+    - name: shelf_left
+      type: single_cabinet
+      default_config_name: cab_top
+      orientation: "left"
+      size: [0.5, 0.4, 0.92]
+      align_to: cab_left
+      side: right
+
+    - name: hood
+      type: hood
+      size: [stovetop, 0.60, null]
+      offset: [0, 0, 0.75]
+      align_to: stovetop
+      side: top
+
+
+    - name: cab_right
+      type: single_cabinet
+      default_config_name: cab_top
+      orientation: "left"
+      size: [0.5, 0.40, 0.92]
+      pos: [2.75, -0.20, 1.85]
+
+    - name: shelf_right
+      type: open_cabinet
+      default_config_name: shelves
+      size: [0.5, 0.4, 0.92]
+      align_to: cab_right
+      side: left
+  # Cabinets built into counters
+  bottom_row_cabinets:
+    - name: stack_left
+      type: stack
+      levels: ["drawer", "drawer", "drawer", "drawer"]
+      percentages: [0.25, 0.25, 0.25, 0.25]
+      size: [1, 0.6, 0.92]
+      pos: [0.5, -0.3, 0.5]
+
+    - name: stack_middle
+      type: stack
+      levels: ["hinge_cabinet", "drawer"]
+      percentages: [0.75, 0.25]
+      size: [1, 0.6, 0.92]
+      pos: [1.5, -0.3, 0.5]
+    
+    - name: stack_right
+      type: stack
+      levels: ["drawer", "drawer"]
+      percentages: [0.5, 0.5]
+      size: [1, 0.6, 0.92]
+      pos: [2.5, -0.3, 0.5]

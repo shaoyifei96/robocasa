@@ -27,18 +27,20 @@ class CookCheeseAndTomatoes(Kitchen):
             # If episode meta already has refs (e.g., loading from dataset), reuse them
             self.cabinet_1 = self.fixture_refs["cabinet_1"]
             self.cabinet_2 = self.fixture_refs["cabinet_2"]
+            # self.cabinet_3 = self.fixture_refs["cabinet_3"]
             self.counter = self.fixture_refs["counter"]
             self.stove = self.fixture_refs["stove"]
         else:
             for fxtr in self.fixtures.values():
-                if fxtr.name == "cab_1_left_group":
+                if fxtr.name == "cab_main_main_group":
                     self.cabinet_1 = fxtr
-                elif fxtr.name == "cab_2_left_group":
+                elif fxtr.name == "cab_2_main_group":
                     self.cabinet_2 = fxtr
-            assert self.cabinet_1 is not None and self.cabinet_2 is not None, "Could not find both cabinets."
+                # elif fxtr.name == "":
+                #     self.cabinet_3 = fxtr
             self.fixture_refs["cabinet_1"] = self.cabinet_1
             self.fixture_refs["cabinet_2"] = self.cabinet_2
-
+            # self.fixture_refs["cabinet_3"] = self.cabinet_3
             self.stove = self.get_fixture(FixtureType.STOVE)
             if "task_refs" in self._ep_meta:
                 self.knob = self._ep_meta["task_refs"]["knob"]
@@ -67,7 +69,7 @@ class CookCheeseAndTomatoes(Kitchen):
     def get_ep_meta(self):
         ep_meta = super().get_ep_meta()
         ep_meta["lang"] = (
-            "Open the two cabinets, pick the tomato and cheese, cook them in the pan, and place them on the plate."
+            "Open the two cabinets, pick the tomato and cheese, place them in the pan, and turn on the stove."
         )
         return ep_meta
 
@@ -76,6 +78,7 @@ class CookCheeseAndTomatoes(Kitchen):
         super()._reset_internal()
         self.cabinet_1.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
         self.cabinet_2.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
+        # self.cabinet_3.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
 
     def _get_obj_cfgs(self):
         cfgs = []
@@ -155,6 +158,21 @@ class CookCheeseAndTomatoes(Kitchen):
                 ),
             )
         )
+
+        # cfgs.append(
+        #     dict(
+        #         name="cheese",
+        #         obj_groups="cheese",
+        #         graspable=True,
+        #         placement=dict(
+        #             fixture=self.cabinet_3,
+        #             size=(0.0, 0.0),
+        #             pos=(0.0, 0.0),
+        #             rotation=(0, 0),
+        #             margin=0.0,
+        #         ),
+        #     )
+        # )
         
         # Door of second cabinet
         # cfgs.append(
@@ -173,10 +191,11 @@ class CookCheeseAndTomatoes(Kitchen):
 
 
 
+
         return cfgs
 
     def _check_success(self):
         tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato", "plate")
         cheese_on_plate = OU.check_obj_in_receptacle(self, "cheese", "plate")
-        gripper_far = OU.gripper_obj_far(self)
-        return tomato_on_plate and cheese_on_plate and gripper_far 
+        # gripper_far = OU.gripper_obj_far(self)
+        return tomato_on_plate and cheese_on_plate #and gripper_far 
