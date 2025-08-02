@@ -87,6 +87,7 @@ def collect_human_trajectory(
     device.start_control()
 
     ep_obs = []
+    ep_actions = []
 
     nonzero_ac_seen = False
 
@@ -157,7 +158,7 @@ def collect_human_trajectory(
         # Run environment step
         obs, _, _, _ = env.step(env_action)
         ep_obs.append(obs)
-
+        ep_actions.append(env_action)
         if render:
             env.render()
 
@@ -193,7 +194,7 @@ def collect_human_trajectory(
     # cleanup for end of data collection episodes
     env.close()
 
-    return ep_directory, discard_traj, ep_obs
+    return ep_directory, discard_traj, ep_obs, ep_actions
 
 
 def gather_demonstrations_as_hdf5(directory, out_dir, env_info, excluded_episodes=None):
@@ -520,7 +521,7 @@ if __name__ == "__main__":
     # collect demonstrations
     while True:
         print()
-        ep_directory, discard_traj, ep_obs = collect_human_trajectory(
+        ep_directory, discard_traj, ep_obs, ep_actions = collect_human_trajectory(
             env,
             device,
             args.arm,
@@ -544,6 +545,10 @@ if __name__ == "__main__":
                     os.path.join(new_dir, f"demo_{successful_demos}_obs.pkl"), "wb"
                 ) as f:
                     pickle.dump(ep_obs, f)
+                with open(
+                    os.path.join(new_dir, f"demo_{successful_demos}_actions.pkl"), "wb"
+                ) as f:
+                    pickle.dump(ep_actions, f)
                 # Check if we've reached the target number of demos
                 if args.num_demos is not None and successful_demos >= args.num_demos:
                     print(

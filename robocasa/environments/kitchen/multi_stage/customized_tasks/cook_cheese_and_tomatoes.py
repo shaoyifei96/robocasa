@@ -79,7 +79,7 @@ class CookCheeseAndTomatoes(Kitchen):
     def _reset_internal(self):
         """Ensure cabinet doors start closed."""
         super()._reset_internal()
-        self.cabinet_1.set_door_state(min=0.95, max=1.0, env=self, rng=self.rng)
+        self.cabinet_1.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
         # self.cabinet_2.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
         # self.cabinet_3.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
 
