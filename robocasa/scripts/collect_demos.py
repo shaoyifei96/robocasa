@@ -11,6 +11,7 @@ from copy import deepcopy
 import datetime
 import json
 import os
+import pickle
 import time
 from glob import glob
 
@@ -80,13 +81,24 @@ def collect_human_trajectory(
         # ID = 2 always corresponds to agentview
         env.render()
 
-    task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
+    task_completion_hold_count = (
+        -1
+    )  # counter to collect 10 timesteps after reaching goal
     device.start_control()
+
+    ep_obs = []
 
     nonzero_ac_seen = False
 
     # Keep track of prev gripper actions when using since they are position-based and must be maintained when arms switched
-    all_prev_gripper_actions = [{f"{robot_arm}_gripper": np.repeat([0], robot.gripper[robot_arm].dof) for robot_arm in robot.arms if robot.gripper[robot_arm].dof > 0} for robot in env.robots]
+    all_prev_gripper_actions = [
+        {
+            f"{robot_arm}_gripper": np.repeat([0], robot.gripper[robot_arm].dof)
+            for robot_arm in robot.arms
+            if robot.gripper[robot_arm].dof > 0
+        }
+        for robot in env.robots
+    ]
 
     zero_action = np.zeros(env.action_dim)
     for _ in range(1):
@@ -135,12 +147,17 @@ def collect_human_trajectory(
             nonzero_ac_seen = True
 
         # Maintain gripper state for each robot but only update the active robot with action
-        env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]
+        env_action = [
+            robot.create_action_vector(all_prev_gripper_actions[i])
+            for i, robot in enumerate(env.robots)
+        ]
         env_action[device.active_robot] = active_robot.create_action_vector(action_dict)
         env_action = np.concatenate(env_action)
 
         # Run environment step
         obs, _, _, _ = env.step(env_action)
+        ep_obs.append(obs)
+
         if render:
             env.render()
 
@@ -176,7 +193,7 @@ def collect_human_trajectory(
     # cleanup for end of data collection episodes
     env.close()
 
-    return ep_directory, discard_traj
+    return ep_directory, discard_traj, ep_obs
 
 
 def gather_demonstrations_as_hdf5(directory, out_dir, env_info, excluded_episodes=None):
@@ -364,12 +381,24 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("--debug", action="store_true")
-    parser.add_argument("--renderer", type=str, default="mjviewer", choices=["mjviewer", "mujoco"])
-    parser.add_argument("--max_fr", default=30, type=int, help="If specified, limit the frame rate")
+    parser.add_argument(
+        "--renderer", type=str, default="mjviewer", choices=["mjviewer", "mujoco"]
+    )
+    parser.add_argument(
+        "--max_fr", default=30, type=int, help="If specified, limit the frame rate"
+    )
 
     parser.add_argument("--layout", type=int, nargs="+", default=-1)
-    parser.add_argument("--style", type=int, nargs="+", default=[0, 1, 2, 3, 4, 5, 6, 7, 8, 11])
+    parser.add_argument(
+        "--style", type=int, nargs="+", default=[0, 1, 2, 3, 4, 5, 6, 7, 8, 11]
+    )
     parser.add_argument("--generative_textures", action="store_true")
+    parser.add_argument(
+        "--num_demos",
+        type=int,
+        default=None,
+        help="Number of successful demonstrations to collect (default: collect indefinitely)",
+    )
     args = parser.parse_args()
 
     # Get controller config
@@ -404,7 +433,9 @@ if __name__ == "__main__":
     # Mirror actions if using a kitchen environment
     if env_name in ["Lift"]:  # add other non-kitchen tasks here
         if args.obj_groups is not None:
-            print("Specifying 'obj_groups' in non-kitchen environment does not have an effect.")
+            print(
+                "Specifying 'obj_groups' in non-kitchen environment does not have an effect."
+            )
         mirror_actions = False
         if args.camera is None:
             args.camera = "agentview"
@@ -484,11 +515,12 @@ if __name__ == "__main__":
     os.makedirs(new_dir)
 
     excluded_eps = []
+    successful_demos = 0
 
     # collect demonstrations
     while True:
         print()
-        ep_directory, discard_traj = collect_human_trajectory(
+        ep_directory, discard_traj, ep_obs = collect_human_trajectory(
             env,
             device,
             args.arm,
@@ -503,5 +535,26 @@ if __name__ == "__main__":
         if not args.debug:
             if discard_traj and ep_directory is not None:
                 excluded_eps.append(ep_directory.split("/")[-1])
-            hdf5_path = gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info, excluded_episodes=excluded_eps)
+            else:
+                # Count successful demos (non-discarded trajectories)
+                successful_demos += 1
+                print(f"Successfully collected demo {successful_demos}")
+                # save observations as pkl
+                with open(
+                    os.path.join(new_dir, f"demo_{successful_demos}_obs.pkl"), "wb"
+                ) as f:
+                    pickle.dump(ep_obs, f)
+                # Check if we've reached the target number of demos
+                if args.num_demos is not None and successful_demos >= args.num_demos:
+                    print(
+                        f"Reached target of {args.num_demos} successful demonstrations. Stopping collection."
+                    )
+                    break
+
+    # Gather all demonstrations into a single HDF5 file (only once at the end)
+    if not args.debug:
+        hdf5_path = gather_demonstrations_as_hdf5(
+            tmp_directory, new_dir, env_info, excluded_episodes=excluded_eps
+        )
+        if hdf5_path is not None:
             convert_to_robomimic_format(hdf5_path)

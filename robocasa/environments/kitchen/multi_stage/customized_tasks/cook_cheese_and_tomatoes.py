@@ -23,23 +23,25 @@ class CookCheeseAndTomatoes(Kitchen):
         super()._setup_kitchen_references()
 
         # Register two distinct cabinets
-        if "cabinet_1" in self.fixture_refs:
-            # If episode meta already has refs (e.g., loading from dataset), reuse them
-            self.cabinet_1 = self.fixture_refs["cabinet_1"]
-            self.cabinet_2 = self.fixture_refs["cabinet_2"]
-            # self.cabinet_3 = self.fixture_refs["cabinet_3"]
-            self.counter = self.fixture_refs["counter"]
-            self.stove = self.fixture_refs["stove"]
-        else:
+        # if "cabinet_1" in self.fixture_refs:
+        #     # If episode meta already has refs (e.g., loading from dataset), reuse them
+        #     self.cabinet_1 = self.fixture_refs["cabinet_1"]
+        #     # self.cabinet_2 = self.fixture_refs["cabinet_2"]
+        #     # self.cabinet_3 = self.fixture_refs["cabinet_3"]
+        #     self.counter = self.fixture_refs["counter"]
+        #     self.stove = self.fixture_refs["stove"]
+        if True:
             for fxtr in self.fixtures.values():
-                if fxtr.name == "cab_main_main_group":
+                if "cab" in fxtr.name and "main_group" in fxtr.name:
+                    print(fxtr.name)
+                if fxtr.name == "cab_mid_left_main_group":
                     self.cabinet_1 = fxtr
-                elif fxtr.name == "cab_2_main_group":
-                    self.cabinet_2 = fxtr
+                # elif fxtr.name == "cab_mid_right_main_group":
+                #     self.cabinet_2 = fxtr
                 # elif fxtr.name == "":
                 #     self.cabinet_3 = fxtr
             self.fixture_refs["cabinet_1"] = self.cabinet_1
-            self.fixture_refs["cabinet_2"] = self.cabinet_2
+            # self.fixture_refs["cabinet_2"] = self.cabinet_2
             # self.fixture_refs["cabinet_3"] = self.cabinet_3
             self.stove = self.get_fixture(FixtureType.STOVE)
             if "task_refs" in self._ep_meta:
@@ -60,24 +62,25 @@ class CookCheeseAndTomatoes(Kitchen):
                     else self.rng.choice(valid_knobs)
                 )
                 self.counter = self.register_fixture_ref(
-                "counter", dict(id=FixtureType.COUNTER, ref=self.stove, size=(0.30, 0.40))
-            )
+                    "counter",
+                    dict(id=FixtureType.COUNTER, ref=self.stove, size=(0.30, 0.40)),
+                )
 
         # Initial robot base location
         self.init_robot_base_pos = self.cabinet_1
 
     def get_ep_meta(self):
         ep_meta = super().get_ep_meta()
-        ep_meta["lang"] = (
-            "Open the two cabinets, pick the tomato and cheese, place them in the pan, and turn on the stove."
-        )
+        ep_meta[
+            "lang"
+        ] = "Open the two cabinets, pick the tomato and cheese, place them in the pan, and turn on the stove."
         return ep_meta
 
     def _reset_internal(self):
         """Ensure cabinet doors start closed."""
         super()._reset_internal()
-        self.cabinet_1.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
-        self.cabinet_2.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
+        self.cabinet_1.set_door_state(min=0.95, max=1.0, env=self, rng=self.rng)
+        # self.cabinet_2.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
         # self.cabinet_3.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
 
     def _get_obj_cfgs(self):
@@ -93,6 +96,7 @@ class CookCheeseAndTomatoes(Kitchen):
                     ensure_object_boundary_in_range=False,
                     size=(0.02, 0.02),
                     pos=(0.0, 0.0),
+                    rotation=(-1, -0.5),
                 ),
             )
         )
@@ -105,9 +109,11 @@ class CookCheeseAndTomatoes(Kitchen):
                 graspable=False,
                 placement=dict(
                     fixture=self.counter,
-                    sample_region_kwargs=dict(ref=self.stove),
-                    size=(0.30, 0.30),
-                    pos=("ref", -1.0),
+                    sample_region_kwargs=dict(ref=self.cabinet_1),
+                    size=(0.3, 0.3),  # Smaller, more specific region
+                    pos=("ref", -1.0),  # Position directly under cabinet
+                    rotation=(-0.3, 0.3),
+                    # margin=0.0,                           # Smaller margin for precision
                 ),
             )
         )
@@ -115,19 +121,33 @@ class CookCheeseAndTomatoes(Kitchen):
         # Tomato in first cabinet – place at exact centre of the bottom
         cfgs.append(
             dict(
-                name="tomato",
+                name="tomato_1",
                 obj_groups="tomato",
                 graspable=True,
                 placement=dict(
-                    fixture=self.cabinet_1,      # cabinet fixture
-                    size=(0.0, 0.0),         # zero-sized inner region
-                    pos=(0.0, 0.0),          # centre of the reset region
-                    rotation=(0, 0),         # (optional) keep orientation fixed
-                    margin=0.0,              # (optional) don’t shrink the usable area
+                    fixture=self.cabinet_1,  # cabinet fixture
+                    size=(0.0, 0.0),  # zero-sized inner region
+                    pos=(0.0, 0.0),  # centre of the reset region
+                    rotation=(-0.3, 0.3),  # (optional) keep orientation fixed
+                    margin=0.0,  # (optional) don’t shrink the usable area
                 ),
             )
         )
-        
+        # cfgs.append(
+        #     dict(
+        #         name="tomato_2",
+        #         obj_groups="tomato",
+        #         graspable=True,
+        #         placement=dict(
+        #             fixture=self.cabinet_1,      # cabinet fixture
+        #             size=(0.0, 0.0),         # zero-sized inner region
+        #             pos=(0.2, 0.0),          # centre of the reset region
+        #             rotation=(0, 0),         # (optional) keep orientation fixed
+        #             margin=0.0,              # (optional) don’t shrink the usable area
+        #         ),
+        #     )
+        # )
+
         # Door of first cabinet
         # cfgs.append(
         #     dict(
@@ -144,20 +164,20 @@ class CookCheeseAndTomatoes(Kitchen):
         # )
 
         # Cheese in second cabinet – same idea
-        cfgs.append(
-            dict(
-                name="cheese",
-                obj_groups="cheese",
-                graspable=True,
-                placement=dict(
-                    fixture=self.cabinet_2,
-                    size=(0.0, 0.0),
-                    pos=(0.0, 0.0),
-                    rotation=(0, 0),
-                    margin=0.0,
-                ),
-            )
-        )
+        # cfgs.append(
+        #     dict(
+        #         name="cheese",
+        #         obj_groups="cheese",
+        #         graspable=True,
+        #         placement=dict(
+        #             fixture=self.cabinet_2,
+        #             size=(0.0, 0.0),
+        #             pos=(0.0, 0.0),
+        #             rotation=(0, 0),
+        #             margin=0.0,
+        #         ),
+        #     )
+        # )
 
         # cfgs.append(
         #     dict(
@@ -173,7 +193,7 @@ class CookCheeseAndTomatoes(Kitchen):
         #         ),
         #     )
         # )
-        
+
         # Door of second cabinet
         # cfgs.append(
         #     dict(
@@ -189,13 +209,11 @@ class CookCheeseAndTomatoes(Kitchen):
         #     )
         # )
 
-
-
-
         return cfgs
 
     def _check_success(self):
-        tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato", "plate")
-        cheese_on_plate = OU.check_obj_in_receptacle(self, "cheese", "plate")
-        # gripper_far = OU.gripper_obj_far(self)
-        return tomato_on_plate and cheese_on_plate #and gripper_far 
+        tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato_1", "plate")
+        # tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato_2", "plate")
+        # cheese_on_plate = OU.check_obj_in_receptacle(self, "cheese", "plate")
+        gripper_far = OU.gripper_obj_far(self, "tomato_1")
+        return tomato_on_plate and gripper_far  # and cheese_on_plate #and gripper_far

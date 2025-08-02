@@ -28,7 +28,9 @@ class PlaceTomatoesFromPanToPlates(Kitchen):
         if "task_refs" in self._ep_meta:
             self.knob = self._ep_meta["task_refs"]["knob"]
         else:
-            valid_knobs = [k for k, v in self.stove.knob_joints.items() if v is not None]
+            valid_knobs = [
+                k for k, v in self.stove.knob_joints.items() if v is not None
+            ]
             if self.knob_id == "random":
                 self.knob = self.rng.choice(valid_knobs)
             else:
@@ -39,9 +41,9 @@ class PlaceTomatoesFromPanToPlates(Kitchen):
 
     def get_ep_meta(self):
         ep_meta = super().get_ep_meta()
-        ep_meta["lang"] = (
-            f"move each tomato from the pan onto separate plates and turn off the {self.knob.replace('_', ' ')} burner"
-        )
+        ep_meta[
+            "lang"
+        ] = f"move each tomato from the pan onto separate plates and turn off the {self.knob.replace('_', ' ')} burner"
         return ep_meta
 
     def _reset_internal(self):
@@ -101,8 +103,8 @@ class PlaceTomatoesFromPanToPlates(Kitchen):
 
     def _check_success(self):
         # tomato-plate pairing (order agnostic)
-        t1_p1 = OU.check_obj_in_receptacle(self, "tomato1", "plate1")
-        t1_p2 = OU.check_obj_in_receptacle(self, "tomato1", "plate2")
+        t1_p1 = OU.check_obj_in_receptacle(self, "tomato_1", "plate1")
+        t1_p2 = OU.check_obj_in_receptacle(self, "tomato_1", "plate2")
         t2_p1 = OU.check_obj_in_receptacle(self, "tomato2", "plate1")
         t2_p2 = OU.check_obj_in_receptacle(self, "tomato2", "plate2")
 
@@ -113,4 +115,4 @@ class PlaceTomatoesFromPanToPlates(Kitchen):
         stove_off = knob_angle < 0.05 or knob_angle > 2 * np.pi - 0.05
 
         gripper_far = OU.gripper_obj_far(self)
-        return tomatoes_on_plates and stove_off and gripper_far 
+        return tomatoes_on_plates and stove_off and gripper_far

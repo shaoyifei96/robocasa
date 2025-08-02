@@ -59,7 +59,7 @@ main_group:
       size: [0.5, 0.40, 0.92]
       pos: [0.25, -0.20, 1.85]
 
-    - name: shelf_left
+    - name: cab_mid_left
       type: single_cabinet
       default_config_name: cab_top
       orientation: "left"
@@ -78,16 +78,18 @@ main_group:
     - name: cab_right
       type: single_cabinet
       default_config_name: cab_top
-      orientation: "left"
+      orientation: "right"
       size: [0.5, 0.40, 0.92]
       pos: [2.75, -0.20, 1.85]
 
-    - name: shelf_right
-      type: open_cabinet
-      default_config_name: shelves
+    - name: cab_mid_right
+      type: single_cabinet
+      default_config_name: cab_top
+      orientation: "left"
       size: [0.5, 0.4, 0.92]
       align_to: cab_right
       side: left
+
   # Cabinets built into counters
   bottom_row_cabinets:
     - name: stack_left
