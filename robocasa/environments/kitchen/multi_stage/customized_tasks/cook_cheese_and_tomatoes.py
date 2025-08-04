@@ -36,12 +36,12 @@ class CookCheeseAndTomatoes(Kitchen):
                     print(fxtr.name)
                 if fxtr.name == "cab_mid_left_main_group":
                     self.cabinet_1 = fxtr
-                # elif fxtr.name == "cab_mid_right_main_group":
-                #     self.cabinet_2 = fxtr
-                # elif fxtr.name == "":
+                elif fxtr.name == "cab_mid_right_main_group":
+                    self.cabinet_2 = fxtr
+                # elif fxtr.name == "cab_mid_left_main_group":
                 #     self.cabinet_3 = fxtr
             self.fixture_refs["cabinet_1"] = self.cabinet_1
-            # self.fixture_refs["cabinet_2"] = self.cabinet_2
+            self.fixture_refs["cabinet_2"] = self.cabinet_2
             # self.fixture_refs["cabinet_3"] = self.cabinet_3
             self.stove = self.get_fixture(FixtureType.STOVE)
             if "task_refs" in self._ep_meta:
@@ -80,7 +80,7 @@ class CookCheeseAndTomatoes(Kitchen):
         """Ensure cabinet doors start closed."""
         super()._reset_internal()
         self.cabinet_1.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
-        # self.cabinet_2.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
+        self.cabinet_2.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
         # self.cabinet_3.set_door_state(min=0.0, max=0.0, env=self, rng=self.rng)
 
     def _get_obj_cfgs(self):
@@ -179,20 +179,20 @@ class CookCheeseAndTomatoes(Kitchen):
         #     )
         # )
 
-        # cfgs.append(
-        #     dict(
-        #         name="cheese",
-        #         obj_groups="cheese",
-        #         graspable=True,
-        #         placement=dict(
-        #             fixture=self.cabinet_3,
-        #             size=(0.0, 0.0),
-        #             pos=(0.0, 0.0),
-        #             rotation=(0, 0),
-        #             margin=0.0,
-        #         ),
-        #     )
-        # )
+        cfgs.append(
+            dict(
+                name="cheese",
+                obj_groups="cheese",
+                graspable=True,
+                placement=dict(
+                    fixture=self.cabinet_2,
+                    size=(0.0, 0.0),
+                    pos=(0.0, 0.0),
+                    rotation=(0, 0),
+                    margin=0.0,
+                ),
+            )
+        )
 
         # Door of second cabinet
         # cfgs.append(
@@ -213,7 +213,10 @@ class CookCheeseAndTomatoes(Kitchen):
 
     def _check_success(self):
         tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato_1", "plate")
+        cheese_on_plate = OU.check_obj_in_receptacle(self, "cheese", "plate")
         # tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato_2", "plate")
         # cheese_on_plate = OU.check_obj_in_receptacle(self, "cheese", "plate")
         gripper_far = OU.gripper_obj_far(self, "tomato_1")
-        return tomato_on_plate and gripper_far  # and cheese_on_plate #and gripper_far
+        return (
+            tomato_on_plate and cheese_on_plate
+        )  # and gripper_far  # and cheese_on_plate #and gripper_far
