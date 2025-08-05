@@ -253,11 +253,11 @@ class PnPCabToCounter(PnP):
                 obj_groups="my_pnp",
                 graspable=True,
                 placement=dict(
-                    fixture=self.cab,      # cabinet fixture
-                    size=(0.0, 0.0),         # zero-sized inner region
-                    pos=(0.0, 0.0),          # centre of the reset region
-                    rotation=(0, 0),         # (optional) keep orientation fixed
-                    margin=0.0,              # (optional) don’t shrink the usable area
+                    fixture=self.cab,  # cabinet fixture
+                    size=(0.0, 0.0),  # zero-sized inner region
+                    pos=(0.0, 0.0),  # centre of the reset region
+                    rotation=(0, 0),  # (optional) keep orientation fixed
+                    margin=0.0,  # (optional) don’t shrink the usable area
                 ),
             )
         )
@@ -931,7 +931,7 @@ class PnPStoveToCounter(PnP):
         cfgs.append(
             dict(
                 name="container",
-                obj_groups=("plate", "bowl"),
+                obj_groups=("plate"),
                 placement=dict(
                     fixture=self.counter,
                     sample_region_kwargs=dict(

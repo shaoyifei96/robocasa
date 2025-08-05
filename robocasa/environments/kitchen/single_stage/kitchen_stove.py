@@ -30,7 +30,9 @@ class ManipulateStoveKnob(Kitchen):
             self.cookware_burner = self._ep_meta["task_refs"]["cookware_burner"]
         else:
             valid_knobs = [
-                k for (k, v) in self.stove.knob_joints.items() if v is not None
+                k
+                for (k, v) in self.stove.knob_joints.items()
+                if v is not None and "rear" in k
             ]
             if self.knob_id == "random":
                 self.knob = self.rng.choice(list(valid_knobs))

@@ -61,9 +61,11 @@ class CookCheeseAndTomatoes(Kitchen):
                     if self.rng.uniform() <= 0.50
                     else self.rng.choice(valid_knobs)
                 )
-                self.counter = self.register_fixture_ref(
-                    "counter",
-                    dict(id=FixtureType.COUNTER, ref=self.stove, size=(0.30, 0.40)),
+                self.counter_left = self.register_fixture_ref(
+                    "counter_left", dict(id=FixtureType.COUNTER)
+                )
+                self.counter_right = self.register_fixture_ref(
+                    "counter_right", dict(id=FixtureType.COUNTER)
                 )
 
         # Initial robot base location
@@ -104,16 +106,31 @@ class CookCheeseAndTomatoes(Kitchen):
         # Plate on counter
         cfgs.append(
             dict(
-                name="plate",
+                name="plate_1",
                 obj_groups="plate",
                 graspable=False,
                 placement=dict(
-                    fixture=self.counter,
+                    fixture=self.counter_left,
                     sample_region_kwargs=dict(ref=self.cabinet_1),
                     size=(0.3, 0.3),  # Smaller, more specific region
                     pos=("ref", -1.0),  # Position directly under cabinet
                     rotation=(-0.3, 0.3),
                     # margin=0.0,                           # Smaller margin for precision
+                ),
+            )
+        )
+
+        cfgs.append(
+            dict(
+                name="plate_2",
+                obj_groups="plate",
+                graspable=False,
+                placement=dict(
+                    fixture=self.counter_right,
+                    sample_region_kwargs=dict(ref=self.cabinet_2),
+                    size=(0.3, 0.3),  # Smaller, more specific region
+                    pos=("ref", -1.0),  # Position directly under cabinet
+                    rotation=(-0.3, 0.3),
                 ),
             )
         )
@@ -181,7 +198,7 @@ class CookCheeseAndTomatoes(Kitchen):
 
         cfgs.append(
             dict(
-                name="cheese",
+                name="cheese_2",
                 obj_groups="cheese",
                 graspable=True,
                 placement=dict(
@@ -212,11 +229,11 @@ class CookCheeseAndTomatoes(Kitchen):
         return cfgs
 
     def _check_success(self):
-        tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato_1", "plate")
-        cheese_on_plate = OU.check_obj_in_receptacle(self, "cheese", "plate")
+        tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato_1", "plate_1")
+        cheese_on_plate = OU.check_obj_in_receptacle(self, "cheese", "plate_2")
         # tomato_on_plate = OU.check_obj_in_receptacle(self, "tomato_2", "plate")
         # cheese_on_plate = OU.check_obj_in_receptacle(self, "cheese", "plate")
-        gripper_far = OU.gripper_obj_far(self, "tomato_1")
+        # gripper_far = OU.gripper_obj_far(self, "tomato_1")
         return (
             tomato_on_plate and cheese_on_plate
         )  # and gripper_far  # and cheese_on_plate #and gripper_far
